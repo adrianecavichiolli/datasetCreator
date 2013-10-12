@@ -5,6 +5,7 @@ import numpy
 import cPickle
 import cv2
 import shutil
+from TestUtils import *
 from DatasetCreatorFactory import *
 
 class TestDatasetCreator(unittest.TestCase):
@@ -12,15 +13,17 @@ class TestDatasetCreator(unittest.TestCase):
         self.imgfolder = 'testdata/sample1image'
         self.savefolder = 'testdata/sample1image'
         self.datasetName = 'result'
-        self.randomNumberGenerator = random.Random(1)
+        self.classes = [0]
+        self.classNames = ['class 0']
         self.target = DatasetCreatorFactory.create(self.imgfolder, 
-                                                   self.savefolder, 
-                                                   self.randomNumberGenerator)
+                                                   self.savefolder,
+												   self.classNames)
         
-        self.target.CreateConvNet(name = self.datasetName)
+        self.target.CreateConvNet(name = self.datasetName, classes = self.classes)
         
         self.folderWasCreated()
         self.unionOfBatchesContainAllImages()
+        self.metadataReflectsBatchData()
         
         shutil.rmtree(os.path.join(self.savefolder, self.datasetName))
 
@@ -31,6 +34,16 @@ class TestDatasetCreator(unittest.TestCase):
         batches = self.joinNumpyArray(self.getBatchesData())
         images = self.joinNumpyArray(self.getImagesAsNumpyArray())
         assert numpy.all(numpy.sort(batches, axis=0) == numpy.sort(images, axis = 0))
+
+    def metadataReflectsBatchData(self):
+        batchMeta = self.getBatchMeta()
+        batches = self.joinNumpyArray(self.getBatchesData())
+        mean = self.CalculateMean(batches)
+
+        self.assertEqual(arrayEqualsTo(mean), batchMeta['data_mean'])
+        self.assertTrue(batchMeta['data_in_rows'])
+        self.assertEqual(batches.shape[1], batchMeta['num_vis'])
+        self.assertEqual(self.classNames, batchMeta['label_names'])
 
     def batchesIntersectionsAreEmpty(self):
         batches = self.getBatchesData()
@@ -44,6 +57,9 @@ class TestDatasetCreator(unittest.TestCase):
     def joinNumpyArray(self, listOfArrays):
         return numpy.concatenate(listOfArrays)
 
+    def getBatchMeta(self):
+        return self.unPickle(os.path.join(self.savefolder, self.datasetName, 'batches.meta'))
+
     def getBatchesData(self):
         return [batch['data'].T for batch in self.getBatches()]
 
@@ -53,6 +69,11 @@ class TestDatasetCreator(unittest.TestCase):
         batchFiles.sort()
 
         return [self.unPickle(os.path.join(self.savefolder, self.datasetName, f)) for f in batchFiles]
+
+    def CalculateMean(self, batches):
+        total = numpy.sum(batches, axis=0)
+
+        return ((total*1.0) / batches.shape[0]).reshape(-1,1)
 
     def getImagesAsNumpyArray(self):
         imageList = self.getImages()

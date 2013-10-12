@@ -1,13 +1,25 @@
 import unittest
-from mock import Mock
+from mock import Mock, MagicMock
 from BatchBuilder import BatchBuilder
 
-class testBatchBuilder:
+class testBatchBuilder(unittest.TestCase):
     def test(self):
         singleBatchBuilder = Mock()
         listOfImages = Mock()
-        pathToSave = Mock()
+        pathToSave = 'data'
+        metaBatchBuilder = Mock()
+        fileSystem = Mock()
+        classes = [0]
+        classNames = ['class']
 
-        target = BatchBuilder(singleBatchBuilder)
+        fileSystem.joinPath = MagicMock(side_effect = lambda x,y: x + '/' + y)
+
+        target = BatchBuilder(singleBatchBuilder, metaBatchBuilder, fileSystem)
         
-        target.build(listOfImages, pathToSave)
+        target.build(listOfImages, classes, classNames, pathToSave)
+
+        singleBatchBuilder.build.assert_called_with(listOfImages, classes, 'data/data_batch_1')
+        metaBatchBuilder.build.assert_called_with(listOfImages, classNames, 'data/batches.meta')
+        
+if __name__ == '__main__':
+    unittest.main()

@@ -8,6 +8,7 @@ class testSingleBatchBuilder(unittest.TestCase):
 
 	def test_singleImage(self):
 		image = self.makeImage(numpy.arange(12), 0, 'file.jpg')
+		classes = [0]
 		
 		expected = {}
 		expected['data'] = arrayEqualsTo(numpy.arange(12).reshape(-1,1))
@@ -17,14 +18,15 @@ class testSingleBatchBuilder(unittest.TestCase):
 		serializer = Mock()
 		target = SingleBatchBuilder(serializer)
 		
-		target.build([image], 'targetFolder/batch')
+		target.build([image], classes, 'targetFolder/batch')
 		
 		serializer.write.assert_called_with('targetFolder/batch', expected)
 		
-	def test_multipleImages(self):
+	def test_multipleLabels(self):
 		image1 = self.makeImage(numpy.ones(12)*1, 0, 'file1.jpg')
-		image2 = self.makeImage(numpy.ones(12)*2, 1, 'file2.jpg')
-		image3 = self.makeImage(numpy.ones(12)*3, 2, 'file3.jpg')
+		image2 = self.makeImage(numpy.ones(12)*2, 3, 'file2.jpg')
+		image3 = self.makeImage(numpy.ones(12)*3, 5, 'file3.jpg')
+		classes = [0,3,5]
 		
 		expected = {}
 		data = numpy.asarray([numpy.ones(12), numpy.ones(12)*2, numpy.ones(12)*3]).T
@@ -35,7 +37,7 @@ class testSingleBatchBuilder(unittest.TestCase):
 		serializer = Mock()
 		target = SingleBatchBuilder(serializer)
 		
-		target.build([image1, image2, image3], 'targetFolder/batch')
+		target.build([image1, image2, image3], classes, 'targetFolder/batch')
 		
 		serializer.write.assert_called_with('targetFolder/batch', expected)
 

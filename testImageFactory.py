@@ -22,4 +22,5 @@ class testLabeledImage(unittest.TestCase):
         
         self.assertEqual(expected, target.getArray())
         
-        
+if __name__ == '__main__':
+    unittest.main()

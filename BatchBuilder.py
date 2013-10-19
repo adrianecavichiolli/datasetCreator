@@ -4,9 +4,11 @@ class BatchBuilder:
         self.singleBatchBuilder = singleBatchBuilder
         self.metaBatchBuilder = metaBatchBuilder
     
-    def build(self, listOfImages, classes, classNames, datasetSplitIn):
+    def build(self, dataset, classes, classNames):
         result = {}
-        result['data_batch_1'] = self.singleBatchBuilder.build(listOfImages, classes)
-        result['batches.meta'] = self.metaBatchBuilder.build(listOfImages, classNames)
+        result['data_batch_1'] = self.singleBatchBuilder.build(dataset[0], classes)
+        result['data_batch_2'] = self.singleBatchBuilder.build(dataset[1], classes)
+        result['data_batch_3'] = self.singleBatchBuilder.build(dataset[2], classes)
+        result['batches.meta'] = self.metaBatchBuilder.build(dataset, classNames)
         
         return result

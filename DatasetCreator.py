@@ -1,20 +1,9 @@
 class DatasetCreator:
-	def __init__(self, fileSystem, imageReader, batchBuilder, batchRepository, imageFolder, saveFolder, classNames):
-		self.imageFolder = imageFolder
-		self.baseSaveFolder = saveFolder
-		self.fileSystem = fileSystem
-		self.imageReader = imageReader
-		self.batchBuilder = batchBuilder
-		self.batchRepository = batchRepository
-		self.classNames = classNames
-
-	def CreateConvNet(self, name, classes, datasetSplitIn = [0.6, 0.2, 0.2]):
-		self.saveFolder = self.fileSystem.joinPath(self.baseSaveFolder, name)
-		self.fileSystem.makeDir(self.saveFolder)
+	def __init__(self, imageSource, datasetSplitter):
+		self.imageSource = imageSource
+		self.datasetSplitter = datasetSplitter
 		
-		images = [self.imageReader.read(self.imageFolder,img) 
-				  for img in self.fileSystem.listDir(self.imageFolder)
-				  if self.fileSystem.isFile(self.fileSystem.joinPath(self.imageFolder,img))]
+	def buildDataset(self, classes, datasetSplitIn = [0.6, 0.2, 0.2]):
+		images = self.imageSource.load()
 
-		batches = self.batchBuilder.build(images, classes, self.classNames, datasetSplitIn)
-		self.batchRepository.save(batches, self.saveFolder)
+		return self.datasetSplitter.split(images, datasetSplitIn)

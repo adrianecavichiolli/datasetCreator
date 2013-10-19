@@ -1,5 +1,5 @@
 import unittest
-from mock import Mock
+from mock import Mock, call
 from BatchBuilder import BatchBuilder
 
 class testBatchBuilder(unittest.TestCase):
@@ -16,17 +16,21 @@ class testBatchBuilder(unittest.TestCase):
         self.singleBatchBuilder.build.side_effect = [batch1, batch2, batch3]
         self.metaBatchBuilder.build.return_value = meta
 
-        listOfImages = Mock()
+        train = Mock()
+        valid = Mock()
+        test = Mock()
+        dataset = (train, valid, test)
 
         classes = [0]
         classNames = ['class']
       
-        result = self.target.build(listOfImages, classes, classNames, Mock())
+        result = self.target.build(dataset, classes, classNames)
 
-        self.singleBatchBuilder.build.call_args_list
-        
-        
-        self.metaBatchBuilder.build.assert_called_with(listOfImages, classNames)
+        self.singleBatchBuilder.build.assert_has_calls([call(train, classes), 
+                                                        call(valid,classes),
+                                                        call(test,classes)])
+               
+        self.metaBatchBuilder.build.assert_called_with(dataset, classNames)
         
         self.assertEqual({'data_batch_1' : batch1,
                           'data_batch_2' : batch2,

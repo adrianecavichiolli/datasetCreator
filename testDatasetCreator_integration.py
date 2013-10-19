@@ -8,6 +8,7 @@ import shutil
 from TestUtils import *
 from DatasetCreatorFactory import *
 from ImageDataSourceFactory import ImageDataSourceFactory
+from ConvnetBatchCreatorFactory import ConvnetBatchCreatorFactory
 
 class TestDatasetCreator(unittest.TestCase):
 
@@ -19,21 +20,23 @@ class TestDatasetCreator(unittest.TestCase):
         imageSource = ImageDataSourceFactory.Create(sourceFolder = self.imgfolder)
         
         datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
-        convnetBatchCreator = ConvnetBatchCreatorFactory.create()
+        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
         
-        dataset = datasetCreator.buildDataset(classes = [0,1], splitDatasetIn = expectedDistribution)
+        dataset = datasetCreator.buildDataset(classes = [0,1], datasetSplitIn = expectedDistribution)
         
-        convnetBatchCreator.buildBatches(dataset, self.savefolder, self.classNames)
+        convnetBatchCreator.buildBatches(dataset = dataset, 
+                                         classes = [0,1], 
+                                         classNames = self.classNames,  
+                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
 
                 
         self.unionOfBatchesContainAllImages()
         self.assertNumberOfBatches(3)
         self.batchesIntersectionsAreEmpty()
         self.batchesAreSplitAccordingTo(expectedDistribution)
-        self.classesAreBalancedWithinBatches()
         self.metadataReflectsBatchData()
         
-        self.cleanup()
+        #self.cleanup()
     
     def folderWasCreated(self):
         assert os.path.exists(os.path.join(self.savefolder, self.datasetName))
@@ -45,9 +48,10 @@ class TestDatasetCreator(unittest.TestCase):
 
     def metadataReflectsBatchData(self):
         batchMeta = self.getBatchMeta()
-        batches = self.joinNumpyArray(self.getBatchesData())
+        batchesData = self.getBatchesData()
+        batches = self.joinNumpyArray([batchesData[0], batchesData[1]])
         mean = self.CalculateMean(batches)
-
+        
         self.assertEqual(arrayEqualsTo(mean), batchMeta['data_mean'])
         self.assertTrue(batchMeta['data_in_rows'])
         self.assertEqual(batches.shape[1], batchMeta['num_vis'])
@@ -63,19 +67,21 @@ class TestDatasetCreator(unittest.TestCase):
         batches = self.getBatches()
         baseline = numpy.bincount(numpy.array(batches[0]['labels']))*1.0 / len(batches[0]['labels'])
         for batch in batches:
-            current = numpy.bincount(numpy.array(batch['labels']))*1.0 / len(batches['labels'])
-            numpy.test.assert_array_almost_equal(current, baseline, decimal=2)
+            current = numpy.bincount(numpy.array(batch['labels']))*1.0 / len(batch['labels'])
+            numpy.testing.assert_array_almost_equal(current, baseline, decimal=2)
             
     def batchesAreSplitAccordingTo(self, expectedDistribution):
         batches = self.getBatchesData()
-        actual = [batches[i].shape[1] for i in range(3)]
+        actual = [batches[i].shape[0] for i in range(3)]
         actual = numpy.array(actual)*1.0 / sum(actual)
         numpy.testing.assert_array_almost_equal(actual, numpy.array(expectedDistribution))
     
     def assertNumberOfBatches(self, number):
         self.assertEqual(3, len(self.getBatches()), 'Should have created %d batches' % number)
+    
     def assertBatchesDontIntersect(self, batch1, batch2):
-        assert numpy.intersect1d(batch1, batch2).size == 0
+        interssection = [x for x in set(tuple(x) for x in batch1) & set(tuple(x) for x in batch2)]
+        self.assertEqual(0, len(interssection), 'Batches should not have common elements')
 
     def joinNumpyArray(self, listOfArrays):
         return numpy.concatenate(listOfArrays)
@@ -118,8 +124,8 @@ class TestDatasetCreator(unittest.TestCase):
 
     def initialize(self, folder):
         self.imgfolder = os.path.join('testdata/',folder)
-        self.savefolder = self.imgfolder
         self.datasetName = 'result'
+        self.savefolder = self.imgfolder
         self.classNames = ['class ' + str(i) for i in range(50)]
                 
     def cleanup(self):

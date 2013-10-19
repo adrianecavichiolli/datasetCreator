@@ -7,22 +7,27 @@ class TestDatasetCreator(unittest.TestCase):
 		self.fileSystem = Mock()
 		self.imageReader = Mock()
 		self.batchBuilder = Mock()
+		self.batchRepository = Mock()
 		self.basefolder = 'basefolder'
 		self.imageFolder = 'imgFolder'
 		self.classNames = ['class 0', 'class 1', 'class 2']
 		self.target = DatasetCreator(fileSystem = self.fileSystem, 
 									 imageReader = self.imageReader,
 									 batchBuilder = self.batchBuilder,
+									 batchRepository = self.batchRepository, 
 									 imageFolder = self.imageFolder,
 									 saveFolder= self.basefolder,
 									 classNames = self.classNames)
+		self.defaultDatasetSplitIn = [0.6, 0.2, 0.2]
 
 	def test_singleImage(self):
 		image = Mock()
+		batches = Mock()
 		self.fileSystem.joinPath.return_value = 'basefolder/datasetName'
 		self.fileSystem.listDir.return_value = ['file.jpg']
 		self.fileSystem.isFile.return_value = True
-		self.imageReader.read.return_value = image		
+		self.imageReader.read.return_value = image
+		self.batchBuilder.build.return_value = batches		
 		
 		classes = [0]
 		self.target.CreateConvNet(name = 'datasetName', classes = classes)
@@ -30,7 +35,8 @@ class TestDatasetCreator(unittest.TestCase):
 		self.fileSystem.makeDir.assert_called_with('basefolder/datasetName')
 		self.fileSystem.listDir.assert_called_with(self.imageFolder)
 		self.imageReader.read.assert_called_with('imgFolder','file.jpg')
-		self.batchBuilder.build.assert_called_with([image], classes, self.classNames, 'basefolder/datasetName')
+		self.batchBuilder.build.assert_called_with([image], classes, self.classNames, self.defaultDatasetSplitIn)
+		self.batchRepository.save.assert_called_with(batches, 'basefolder/datasetName')
 
 	def test_foldersAreIgnored(self):
 		image = Mock()
@@ -46,17 +52,21 @@ class TestDatasetCreator(unittest.TestCase):
 		
 	def test_multipleImages(self):
 		image = Mock()
+		batches = Mock()
 		self.fileSystem.joinPath.return_value = 'basefolder/datasetName'
 		self.fileSystem.listDir.return_value = ['file.jpg', 'file2.jpg', 'file3.jpg']
 		self.fileSystem.isFile.return_value = True 
 		self.imageReader.read.return_value = image
+		self.batchBuilder.build.return_value = batches
 		
 		classes = [0,1,2]
 		
 		self.target.CreateConvNet(name = 'datasetName', classes = classes)
 		
 		self.imageReader.read.assert_has_calls([call('imgFolder','file.jpg'), call('imgFolder','file2.jpg'), call('imgFolder','file3.jpg')])
-		self.batchBuilder.build.assert_called_with([image, image, image], classes, self.classNames, 'basefolder/datasetName')
+		self.batchBuilder.build.assert_called_with([image, image, image], classes, self.classNames, self.defaultDatasetSplitIn)
+		self.batchRepository.save.assert_called_with(batches, 'basefolder/datasetName')
 
+		
 if __name__ == '__main__':
 	unittest.main()

@@ -15,12 +15,9 @@ class testSingleBatchBuilder(unittest.TestCase):
 		expected['labels'] = [0]
 		expected['filenames'] = ['file.jpg']
 		
-		serializer = Mock()
-		target = SingleBatchBuilder(serializer)
+		target = SingleBatchBuilder()
 		
-		target.build([image], classes, 'targetFolder/batch')
-		
-		serializer.write.assert_called_with('targetFolder/batch', expected)
+		self.assertEqual(expected,target.build([image], classes)) 
 		
 	def test_multipleLabels(self):
 		image1 = self.makeImage(numpy.ones(12)*1, 0, 'file1.jpg')
@@ -34,12 +31,10 @@ class testSingleBatchBuilder(unittest.TestCase):
 		expected['labels'] = [0,1,2]
 		expected['filenames'] = ['file1.jpg','file2.jpg','file3.jpg']
 		
-		serializer = Mock()
-		target = SingleBatchBuilder(serializer)
+		target = SingleBatchBuilder()
 		
-		target.build([image1, image2, image3], classes, 'targetFolder/batch')
-		
-		serializer.write.assert_called_with('targetFolder/batch', expected)
+		result = target.build([image1, image2, image3], classes)		
+		self.assertEqual(expected,result) 
 
 
 	def makeImage(self, array, label, name):

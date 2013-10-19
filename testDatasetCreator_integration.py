@@ -7,26 +7,34 @@ import cv2
 import shutil
 from TestUtils import *
 from DatasetCreatorFactory import *
+from ImageDataSourceFactory import ImageDataSourceFactory
 
 class TestDatasetCreator(unittest.TestCase):
-    def test_1class1image(self):
-        self.imgfolder = 'testdata/sample1image'
-        self.savefolder = 'testdata/sample1image'
-        self.datasetName = 'result'
-        self.classes = [0]
-        self.classNames = ['class 0']
-        self.target = DatasetCreatorFactory.create(self.imgfolder, 
-                                                   self.savefolder,
-												   self.classNames)
+
+    def test_splitImagesIntoTrainValidAndTest(self):
+        self.initialize(folder = 'sample15images')
         
-        self.target.CreateConvNet(name = self.datasetName, classes = self.classes)
+        expectedDistribution = [0.6, 0.2, 0.2]
+
+        imageSource = ImageDataSourceFactory.Create(sourceFolder = self.imgfolder)
         
-        self.folderWasCreated()
+        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
+        convnetBatchCreator = ConvnetBatchCreatorFactory.create()
+        
+        dataset = datasetCreator.buildDataset(classes = [0,1], splitDatasetIn = expectedDistribution)
+        
+        convnetBatchCreator.buildBatches(dataset, self.savefolder, self.classNames)
+
+                
         self.unionOfBatchesContainAllImages()
+        self.assertNumberOfBatches(3)
+        self.batchesIntersectionsAreEmpty()
+        self.batchesAreSplitAccordingTo(expectedDistribution)
+        self.classesAreBalancedWithinBatches()
         self.metadataReflectsBatchData()
         
-        shutil.rmtree(os.path.join(self.savefolder, self.datasetName))
-
+        self.cleanup()
+    
     def folderWasCreated(self):
         assert os.path.exists(os.path.join(self.savefolder, self.datasetName))
 
@@ -51,6 +59,21 @@ class TestDatasetCreator(unittest.TestCase):
             for j in range(i+1, len(batches)):
                 self.assertBatchesDontIntersect(batches[i], batches[j])
 
+    def classesAreBalancedWithinBatches(self):
+        batches = self.getBatches()
+        baseline = numpy.bincount(numpy.array(batches[0]['labels']))*1.0 / len(batches[0]['labels'])
+        for batch in batches:
+            current = numpy.bincount(numpy.array(batch['labels']))*1.0 / len(batches['labels'])
+            numpy.test.assert_array_almost_equal(current, baseline, decimal=2)
+            
+    def batchesAreSplitAccordingTo(self, expectedDistribution):
+        batches = self.getBatchesData()
+        actual = [batches[i].shape[1] for i in range(3)]
+        actual = numpy.array(actual)*1.0 / sum(actual)
+        numpy.testing.assert_array_almost_equal(actual, numpy.array(expectedDistribution))
+    
+    def assertNumberOfBatches(self, number):
+        self.assertEqual(3, len(self.getBatches()), 'Should have created %d batches' % number)
     def assertBatchesDontIntersect(self, batch1, batch2):
         assert numpy.intersect1d(batch1, batch2).size == 0
 
@@ -63,6 +86,7 @@ class TestDatasetCreator(unittest.TestCase):
     def getBatchesData(self):
         return [batch['data'].T for batch in self.getBatches()]
 
+        
     def getBatches(self):
         files = os.listdir(os.path.join(self.savefolder, self.datasetName))
         batchFiles = [f for f in files if f.startswith('data_batch')]
@@ -92,5 +116,16 @@ class TestDatasetCreator(unittest.TestCase):
     def unPickle(self, filename):
         return cPickle.load(open(filename, 'rb'))
 
+    def initialize(self, folder):
+        self.imgfolder = os.path.join('testdata/',folder)
+        self.savefolder = self.imgfolder
+        self.datasetName = 'result'
+        self.classNames = ['class ' + str(i) for i in range(50)]
+                
+    def cleanup(self):
+        if (len(self.savefolder) > 0 and len(self.datasetName) > 0):
+            shutil.rmtree(os.path.join(self.savefolder, self.datasetName))
+
+        
 if __name__ == '__main__':
     unittest.main()

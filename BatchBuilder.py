@@ -1,10 +1,12 @@
 
 class BatchBuilder:
-    def __init__(self, singleBatchBuilder, metaBatchBuilder, fileSystem):
+    def __init__(self, singleBatchBuilder, metaBatchBuilder):
         self.singleBatchBuilder = singleBatchBuilder
         self.metaBatchBuilder = metaBatchBuilder
-        self.fileSystem = fileSystem
     
-    def build(self, listOfImages, classes, classNames, savePath):
-        self.singleBatchBuilder.build(listOfImages, classes, self.fileSystem.joinPath(savePath, 'data_batch_1'))
-        self.metaBatchBuilder.build(listOfImages, classNames, self.fileSystem.joinPath(savePath, 'batches.meta'))
+    def build(self, listOfImages, classes, classNames, datasetSplitIn):
+        result = {}
+        result['data_batch_1'] = self.singleBatchBuilder.build(listOfImages, classes)
+        result['batches.meta'] = self.metaBatchBuilder.build(listOfImages, classNames)
+        
+        return result

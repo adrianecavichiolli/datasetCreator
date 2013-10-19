@@ -1,25 +1,38 @@
 import unittest
-from mock import Mock, MagicMock
+from mock import Mock
 from BatchBuilder import BatchBuilder
 
 class testBatchBuilder(unittest.TestCase):
+    def setUp(self):
+        self.singleBatchBuilder = Mock()
+        self.metaBatchBuilder = Mock()
+        self.target = BatchBuilder(self.singleBatchBuilder, self.metaBatchBuilder)
+        
     def test(self):
-        singleBatchBuilder = Mock()
+        batch1 = Mock()
+        batch2 = Mock()
+        batch3 = Mock()
+        meta = Mock()
+        self.singleBatchBuilder.build.side_effect = [batch1, batch2, batch3]
+        self.metaBatchBuilder.build.return_value = meta
+
         listOfImages = Mock()
-        pathToSave = 'data'
-        metaBatchBuilder = Mock()
-        fileSystem = Mock()
+
         classes = [0]
         classNames = ['class']
+      
+        result = self.target.build(listOfImages, classes, classNames, Mock())
 
-        fileSystem.joinPath = MagicMock(side_effect = lambda x,y: x + '/' + y)
-
-        target = BatchBuilder(singleBatchBuilder, metaBatchBuilder, fileSystem)
+        self.singleBatchBuilder.build.call_args_list
         
-        target.build(listOfImages, classes, classNames, pathToSave)
-
-        singleBatchBuilder.build.assert_called_with(listOfImages, classes, 'data/data_batch_1')
-        metaBatchBuilder.build.assert_called_with(listOfImages, classNames, 'data/batches.meta')
+        
+        self.metaBatchBuilder.build.assert_called_with(listOfImages, classNames)
+        
+        self.assertEqual({'data_batch_1' : batch1,
+                          'data_batch_2' : batch2,
+                          'data_batch_3' : batch3,
+                          'batches.meta' : meta}, result)
+        
         
 if __name__ == '__main__':
     unittest.main()

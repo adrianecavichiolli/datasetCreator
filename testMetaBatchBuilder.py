@@ -6,9 +6,8 @@ from TestUtils import *
 
 class testMetaBatchBuilder(unittest.TestCase):
 	def test_all(self):
-		serializer = Mock()
-		
-		target = MetaBatchBuilder(serializer)
+
+		target = MetaBatchBuilder()
 		
 		
 		imgList = [self.makeImage([10, 20, 40, 80]),
@@ -20,12 +19,8 @@ class testMetaBatchBuilder(unittest.TestCase):
 		expected['data_in_rows']  = True
 		expected['label_names'] = classesNames
 		expected['data_mean'] = arrayEqualsTo(numpy.asarray([15, 30, 40, 70]).reshape(-1,1))
-		
-		fileToSave = 'data/batches.meta'
-		
-		target.build(imgList, classesNames, fileToSave)
-		
-		serializer.write.assert_called_with('data/batches.meta', expected)
+
+		self.assertEqual(expected, target.build(imgList, classesNames))
 	
 
 	def makeImage(self, array):

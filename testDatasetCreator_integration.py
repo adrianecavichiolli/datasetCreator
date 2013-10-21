@@ -34,9 +34,10 @@ class TestDatasetCreator(unittest.TestCase):
         self.assertNumberOfBatches(3)
         self.batchesIntersectionsAreEmpty()
         self.batchesAreSplitAccordingTo(expectedDistribution)
+        self.classesAreBalancedWithinBatches()
         self.metadataReflectsBatchData()
         
-        #self.cleanup()
+        self.cleanup()
     
     def folderWasCreated(self):
         assert os.path.exists(os.path.join(self.savefolder, self.datasetName))

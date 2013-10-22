@@ -1,19 +1,17 @@
 import unittest
-import random
 import os
-import numpy
 import cPickle
 import cv2
 import shutil
 from TestUtils import *
-from DatasetCreatorFactory import *
+from DatasetCreatorFactory import DatasetCreatorFactory
 from ImageDataSourceFactory import ImageDataSourceFactory
 from ConvnetBatchCreatorFactory import ConvnetBatchCreatorFactory
 
 class TestDatasetCreator(unittest.TestCase):
 
     def test_splitImagesIntoTrainValidAndTest(self):
-        self.initialize(folder = 'sample15images')
+        self.initialize(folder = 'small')
         
         expectedDistribution = [0.6, 0.2, 0.2]
 
@@ -35,6 +33,34 @@ class TestDatasetCreator(unittest.TestCase):
         self.batchesIntersectionsAreEmpty()
         self.batchesAreSplitAccordingTo(expectedDistribution)
         self.classesAreBalancedWithinBatches()
+        self.metadataReflectsBatchData()
+        
+        self.cleanup()
+        
+    def test_resizingImages(self):
+        self.initialize(folder = 'resizing')
+        self.resizeTo = 256
+        
+        expectedDistribution = [0.6, 0.2, 0.2]
+        
+
+        imageSource = ImageDataSourceFactory.CreateResizingImageSource(
+                                            sourceFolder = self.imgfolder,
+                                            newSize = self.resizeTo)
+        
+        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
+        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
+        
+        dataset = datasetCreator.buildDataset(classes = [0,1], datasetSplitIn = expectedDistribution)
+        
+        convnetBatchCreator.buildBatches(dataset = dataset, 
+                                         classes = [0,1], 
+                                         classNames = self.classNames,  
+                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
+
+                
+        self.unionOfBatchesContainAllImages()
+        self.batchesIntersectionsAreEmpty()
         self.metadataReflectsBatchData()
         
         self.cleanup()
@@ -81,7 +107,7 @@ class TestDatasetCreator(unittest.TestCase):
         self.assertEqual(3, len(self.getBatches()), 'Should have created %d batches' % number)
     
     def assertBatchesDontIntersect(self, batch1, batch2):
-        interssection = [x for x in set(tuple(x) for x in batch1) & set(tuple(x) for x in batch2)]
+        interssection = [y for y in set(tuple(x) for x in batch1) & set(tuple(x) for x in batch2)]
         self.assertEqual(0, len(interssection), 'Batches should not have common elements')
 
     def joinNumpyArray(self, listOfArrays):
@@ -108,13 +134,30 @@ class TestDatasetCreator(unittest.TestCase):
 
     def getImagesAsNumpyArray(self):
         imageList = self.getImages()
-        return [self.imageToNumpyArray(img) for img in imageList]
+        if hasattr(self, 'resizeTo'):
+            return [self.imageToNumpyArray(self.resizeImage(img)) for img in imageList]
+        else:
+            return [self.imageToNumpyArray(self.makeImageSquared(img)) for img in imageList]
 
     def getImages(self):
         files = [f for f in os.listdir(self.imgfolder) 
                  if os.path.splitext(f)[1].lower() == ".jpg"]
         return [cv2.imread(os.path.join(self.imgfolder,f)) for f in files]
 
+    def resizeImage(self, img):
+        return cv2.resize(self.makeImageSquared(img), (self.resizeTo, self.resizeTo))
+        
+    def makeImageSquared(self, img):
+        sizeX, sizeY = img.shape[0], img.shape[1]
+        difference = abs(sizeX - sizeY)
+        start = difference / 2
+        if (sizeX < sizeY):
+            return img[:, start:start + sizeX]
+        elif (sizeY < sizeX):
+            return img[start:start + sizeY, :]
+        else:
+            return img
+        
     def imageToNumpyArray(self, img):
         imgCopy = numpy.copy(img)
         imgCopy[:,:,[0,2]] = imgCopy[:,:,[2,0]]

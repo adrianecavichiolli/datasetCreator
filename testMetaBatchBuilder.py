@@ -2,7 +2,7 @@ import unittest
 from mock import Mock
 from MetaBatchBuilder import MetaBatchBuilder
 import numpy
-from TestUtils import *
+from TestUtils import arrayEqualsTo
 
 class testMetaBatchBuilder(unittest.TestCase):
 	def test_all(self):

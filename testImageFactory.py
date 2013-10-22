@@ -1,6 +1,5 @@
 import unittest
 from  LabeledImage import LabeledImage
-import numpy
 from TestUtils import *
 
 class testLabeledImage(unittest.TestCase):

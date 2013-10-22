@@ -2,7 +2,7 @@ import unittest
 from OpencvImgReader import OpenCVImgReader
 from mock import Mock
 import numpy
-from TestUtils import *
+from TestUtils import arrayEqualsTo
 
 
 class testOpenCVImgReader(unittest.TestCase):

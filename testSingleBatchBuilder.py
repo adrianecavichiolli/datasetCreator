@@ -2,7 +2,7 @@ import unittest
 from mock import Mock
 import numpy
 from SingleBatchBuilder import SingleBatchBuilder 
-from TestUtils import *
+from TestUtils import arrayEqualsTo
 
 class testSingleBatchBuilder(unittest.TestCase):
 

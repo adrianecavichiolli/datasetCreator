@@ -21,9 +21,9 @@ class TestDatasetCreator(unittest.TestCase):
         datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
         convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
         
-        dataset = datasetCreator.buildDataset(classes = [0,1], datasetSplitIn = expectedDistribution)
+        dataset = datasetCreator.buildDataset( datasetSplitIn = expectedDistribution)
         
-        convnetBatchCreator.buildBatches(dataset = dataset, 
+        convnetBatchCreator.buildBatches(dataset = dataset,
                                          classes = [0,1], 
                                          classNames = self.classNames,  
                                          saveFolder = os.path.join(self.savefolder, self.datasetName))
@@ -47,12 +47,13 @@ class TestDatasetCreator(unittest.TestCase):
 
         imageSource = ImageDataSourceFactory.CreateResizingImageSource(
                                             sourceFolder = self.imgfolder,
-                                            newSize = self.resizeTo)
+                                            newSize = self.resizeTo,
+                                            loadOnlyClasses=[0,1])
         
         datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
         convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
         
-        dataset = datasetCreator.buildDataset(classes = [0,1], datasetSplitIn = expectedDistribution)
+        dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
         
         convnetBatchCreator.buildBatches(dataset = dataset, 
                                          classes = [0,1], 
@@ -82,7 +83,7 @@ class TestDatasetCreator(unittest.TestCase):
         datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource, preprocessor = preprocessor)
         convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
         
-        dataset = datasetCreator.buildDataset(classes = [0,1], datasetSplitIn = expectedDistribution)
+        dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
         
         convnetBatchCreator.buildBatches(dataset = dataset, 
                                          classes = [0,1], 

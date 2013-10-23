@@ -4,7 +4,7 @@ class DatasetCreator:
 		self.datasetSplitter = datasetSplitter
 		self.preprocessor = preprocessor
 		
-	def buildDataset(self, classes, datasetSplitIn = [0.6, 0.2, 0.2]):
+	def buildDataset(self, datasetSplitIn = [0.6, 0.2, 0.2]):
 		images = self.imageSource.load()
 
 		dataset = self.datasetSplitter.split(images, datasetSplitIn)

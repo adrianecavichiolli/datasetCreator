@@ -58,3 +58,18 @@ class testImageDataSource(unittest.TestCase):
         target.load()
         
         logger.log.assert_has_calls([call('Reading file %s' % name) for name in ['file.jpg', 'file2.jpg', 'file3.jpg']])
+
+    def test_appliesFilter_ifFilterInformed(self):
+        predicate = lambda x: x in ['file.jpg', 'file3.jpg']
+        self.fileSystem.listDir.return_value = ['file.jpg', 'file2.jpg', 'file3.jpg']
+        self.fileSystem.isFile.return_value = True 
+        self.imageReader.read.return_value = Mock()
+        
+        target = ImageDataSource(fileSystem = self.fileSystem, 
+                                 imageReader = self.imageReader, 
+                                 sourceFolder = self.sourceFolder,
+                                 loadImagesMatching=predicate)
+        target.load()
+        
+        self.imageReader.read.assert_has_calls([call(self.sourceFolder,'file.jpg'), call(self.sourceFolder,'file3.jpg')])
+        self.assertEqual(len(self.imageReader.read.call_args_list), 2)

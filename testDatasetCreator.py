@@ -14,8 +14,7 @@ class TestDatasetCreator(unittest.TestCase):
 		self.imageSource.load.return_value = images
 		self.datasetSplitter.split.return_value = dataset
 		
-		classes = [0]
-		result = self.target.buildDataset(classes = classes, datasetSplitIn = [.6, .2, .2])
+		result = self.target.buildDataset(datasetSplitIn = [.6, .2, .2])
 		
 		self.imageSource.load.assert_called_with()
 		self.datasetSplitter.split.assert_called_with(images, [.6,.2,.2])
@@ -32,8 +31,7 @@ class TestDatasetCreator(unittest.TestCase):
 		
 		self.target = DatasetCreator(self.imageSource, self.datasetSplitter, preprocessor)
 		
-		classes = [0]
-		result = self.target.buildDataset(classes = classes, datasetSplitIn = [.6, .2, .2])
+		result = self.target.buildDataset(datasetSplitIn = [.6, .2, .2])
 		
 		self.imageSource.load.assert_called_with()
 		self.datasetSplitter.split.assert_called_with(images, [.6,.2,.2])

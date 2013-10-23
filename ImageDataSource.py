@@ -1,14 +1,16 @@
 class ImageDataSource:
-    def __init__(self, fileSystem, imageReader, sourceFolder, logger = None):
+    def __init__(self, fileSystem, imageReader, sourceFolder, logger = None, loadImagesMatching = lambda x:True):
         self.fileSystem = fileSystem
         self.imageReader = imageReader
         self.sourceFolder = sourceFolder
         self.logger = logger
+        self.shouldLoadImage = loadImagesMatching
     
     def load(self):
         images = [self.ReadImage(img) 
                   for img in self.fileSystem.listDir(self.sourceFolder)
-                  if self.fileSystem.isFile(self.fileSystem.joinPath(self.sourceFolder,img))]
+                  if self.fileSystem.isFile(self.fileSystem.joinPath(self.sourceFolder,img)) 
+                  and self.shouldLoadImage(img)]
         return images
 
     def ReadImage(self, img):

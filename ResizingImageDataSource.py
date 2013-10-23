@@ -4,9 +4,7 @@ class ResizingImageDataSource:
         self.imageResizer = imageResizer
     
     def load(self):
-        images = self.imageDataSource.load()
-        map(self.resizeImage, images)
-        return images
+        return [self.resizeImage(img) for img in self.imageDataSource.load()]
     
     def resizeImage(self, image):
-        image.image = self.imageResizer.resize(image.image)
+        return image.createCopyWithImage(self.imageResizer.resize(image.image))

@@ -3,6 +3,7 @@ from DatasetCreator import DatasetCreator
 
 class DatasetCreatorFactory:
     @staticmethod
-    def Create(imageSource):
+    def Create(imageSource, preprocessor = None):
         return DatasetCreator(imageSource = imageSource,
-                              datasetSplitter =  ClassBalancingDatasetSplitter())
+                              datasetSplitter =  ClassBalancingDatasetSplitter(),
+							  preprocessor = preprocessor)

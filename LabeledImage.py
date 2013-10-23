@@ -19,3 +19,6 @@ class LabeledImage:
     def getArray(self):
         return numpy.transpose(self.image, (2,0,1)).reshape(-1)
     
+    def createCopyWithImage(self, newImage):
+        return LabeledImage(newImage, self.filename, self.label)
+    

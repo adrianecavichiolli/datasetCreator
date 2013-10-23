@@ -7,6 +7,7 @@ from TestUtils import *
 from DatasetCreatorFactory import DatasetCreatorFactory
 from ImageDataSourceFactory import ImageDataSourceFactory
 from ConvnetBatchCreatorFactory import ConvnetBatchCreatorFactory
+from PreprocessorFactory import PreprocessorFactory
 
 class TestDatasetCreator(unittest.TestCase):
 
@@ -64,7 +65,37 @@ class TestDatasetCreator(unittest.TestCase):
         self.metadataReflectsBatchData()
         
         self.cleanup()
-    
+
+    def test_extractingGridPatches(self):
+        self.initialize(folder = 'resizing')
+        self.resizeTo = 256
+        self.patchSize = 64
+        
+        expectedDistribution = [0.6, 0.2, 0.2]
+        
+        imageSource = ImageDataSourceFactory.CreateResizingImageSource(
+                                            sourceFolder = self.imgfolder,
+                                            newSize = self.resizeTo)
+        
+        preprocessor = PreprocessorFactory.CreateExtractGridPatches(self.patchSize)
+        
+        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource, preprocessor = preprocessor)
+        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
+        
+        dataset = datasetCreator.buildDataset(classes = [0,1], datasetSplitIn = expectedDistribution)
+        
+        convnetBatchCreator.buildBatches(dataset = dataset, 
+                                         classes = [0,1], 
+                                         classNames = self.classNames,  
+                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
+
+                
+        self.unionOfBatchesContainAllImages()
+        self.batchesIntersectionsAreEmpty()
+        self.metadataReflectsBatchData()
+        
+        #self.cleanup()
+        
     def folderWasCreated(self):
         assert os.path.exists(os.path.join(self.savefolder, self.datasetName))
 
@@ -135,9 +166,14 @@ class TestDatasetCreator(unittest.TestCase):
     def getImagesAsNumpyArray(self):
         imageList = self.getImages()
         if hasattr(self, 'resizeTo'):
-            return [self.imageToNumpyArray(self.resizeImage(img)) for img in imageList]
+            imageList = [self.resizeImage(img) for img in imageList]
         else:
-            return [self.imageToNumpyArray(self.makeImageSquared(img)) for img in imageList]
+            imageList = [self.makeImageSquared(img) for img in imageList]
+            
+        if hasattr(self, 'patchSize'):
+            return self.extractPatchesFromImageList(imageList)
+        else:
+            return [self.imageToNumpyArray(image) for image in imageList]
 
     def getImages(self):
         files = [f for f in os.listdir(self.imgfolder) 
@@ -162,6 +198,19 @@ class TestDatasetCreator(unittest.TestCase):
         imgCopy = numpy.copy(img)
         imgCopy[:,:,[0,2]] = imgCopy[:,:,[2,0]]
         return numpy.transpose(imgCopy, (2,0,1)).reshape(1,-1)
+
+    def extractPatchesFromImageList(self, imageList):
+        result = []
+        for image in imageList:
+            result += [self.imageToNumpyArray(patch) for patch in self.extractPatches(image)]
+        return result
+
+    def extractPatches(self, image):
+        nPatches = image.shape[0] / self.patchSize
+        return [image[self.patchSize*i:self.patchSize*(i+1), self.patchSize*j:self.patchSize*(j+1)]
+                for i in range(nPatches)
+                for j in range(nPatches)]
+        
 
     def unPickle(self, filename):
         return cPickle.load(open(filename, 'rb'))

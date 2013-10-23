@@ -44,3 +44,17 @@ class testImageDataSource(unittest.TestCase):
         
         self.imageReader.read.assert_has_calls([call(self.sourceFolder,'file.jpg'), call(self.sourceFolder,'file2.jpg'), call(self.sourceFolder,'file3.jpg')])
         self.assertEqual(images, [image, image, image])
+
+    def test_writesToLog_ifLoggerIsInformed(self):
+        logger = Mock()
+        self.fileSystem.listDir.return_value = ['file.jpg', 'file2.jpg', 'file3.jpg']
+        self.fileSystem.isFile.return_value = True 
+        self.imageReader.read.return_value = Mock()
+        
+        target = ImageDataSource(fileSystem = self.fileSystem, 
+                                 imageReader = self.imageReader, 
+                                 sourceFolder = self.sourceFolder,
+                                 logger = logger)
+        target.load()
+        
+        logger.log.assert_has_calls([call('Reading file %s' % name) for name in ['file.jpg', 'file2.jpg', 'file3.jpg']])

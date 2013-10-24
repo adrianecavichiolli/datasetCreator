@@ -4,8 +4,7 @@ class SquaredImageResizer:
         self.newSize = (newSize, newSize)
     
     def resize(self, image):
-        if (image.shape[0] == self.newSize[0] and 
-           image.shape[1] == self.newSize[1]):
+        if (self.imageAlreadyHasCorrectSize(image)):
             return image
         
         rows, cols = image.shape[0], image.shape[1]
@@ -20,3 +19,7 @@ class SquaredImageResizer:
             imgToResize = image
             
         return self.imageResizer.resize(imgToResize, self.newSize)
+       
+    def imageAlreadyHasCorrectSize(self, image):
+        return (image.shape[0] == self.newSize[0] and 
+           image.shape[1] == self.newSize[1])

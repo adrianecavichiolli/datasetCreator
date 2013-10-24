@@ -10,8 +10,9 @@ class ExtractGridPatches:
         return result
     
     def extractGridPatches(self, data):      
-        patches = [self.extractImagePatches(img) for img in data]
-        result = [patch for patchList in patches for patch in patchList]
+        listOfImagePatches = [self.extractImagePatches(img) for img in data]
+        result = [patch for imagePatches in listOfImagePatches 
+                        for patch in imagePatches]
         return result
     
     def extractImagePatches(self, img):
@@ -23,6 +24,6 @@ class ExtractGridPatches:
     
     def makePatch(self, img, row, col):
         patchSize = self.patchSize
-        patch = img.image[row*patchSize:(row+1)*patchSize, col*patchSize:(col+1)*patchSize]
-        result =  img.createCopyWithImage(patch)
-        return result
+        patch = img.image[row*patchSize:(row+1)*patchSize, 
+                          col*patchSize:(col+1)*patchSize]
+        return img.createCopyWithImage(patch)

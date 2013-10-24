@@ -2,7 +2,7 @@ from ImageDataSource import ImageDataSource
 from Filesystem import FileSystem
 from OpencvImgReader import OpenCVImgReader
 from ImageFactory import LabeledImageFactory
-from ResizingImageDataSource import ResizingImageDataSource
+from ResizingImageReader import ResizingImageReader
 from SquaredImageResizer import SquaredImageResizer
 from OpencvImageResizer import OpencvImageResizer
 from TextLogger import TextLogger
@@ -11,20 +11,36 @@ import cv2
 
 class ImageDataSourceFactory:
     @staticmethod
-    def Create(sourceFolder, loadOnlyClasses = None, log = False):
-        logger = TextLogger() if log else None
-        if loadOnlyClasses is None:
-            predicate = lambda x: True
-        else:
-            predicate = LabelInFilenamePredicate(loadOnlyClasses)
-        return ImageDataSource(fileSystem = FileSystem(),
-                              imageReader = OpenCVImgReader(imageFactory = LabeledImageFactory(), openCV = cv2, fileSystem = FileSystem()),
-                              sourceFolder = sourceFolder,
-                              logger = logger,
-                              loadImagesMatching = predicate)
+    def Create(sourceFolder, log = False,  loadOnlyClasses = None):
+        return ImageDataSourceFactory.CreateWithImageReader(
+                            ImageDataSourceFactory.__CreateStandardImageReader(),
+                            sourceFolder, log, loadOnlyClasses)
 
     @staticmethod
-    def CreateResizingImageSource(sourceFolder, newSize, loadOnlyClasses = None, log = False):
-        imageDataSource = ImageDataSourceFactory.Create(sourceFolder, loadOnlyClasses, log)
-        return ResizingImageDataSource(imageDataSource = imageDataSource,
-                                       imageResizer = SquaredImageResizer(OpencvImageResizer(), newSize))
+    def CreateResizingImageSource(sourceFolder, newSize, log = False, loadOnlyClasses = None):
+        return ImageDataSourceFactory.CreateWithImageReader(
+                            ImageDataSourceFactory.__CreateResizingImageReader(newSize),
+                            sourceFolder, log, loadOnlyClasses)
+
+    
+    @staticmethod
+    def CreateWithImageReader(imageReader, sourceFolder, log = False, loadOnlyClasses = None):
+        imageDataSource =  ImageDataSource(fileSystem = FileSystem(),
+                              imageReader = imageReader,
+                              sourceFolder = sourceFolder)
+                              
+        if log:
+            imageDataSource.setLogger(TextLogger())
+        if loadOnlyClasses is not None:
+            imageDataSource.setFilenamePredicate(LabelInFilenamePredicate(loadOnlyClasses))
+        return imageDataSource
+        
+    @staticmethod
+    def __CreateStandardImageReader():
+        return OpenCVImgReader(imageFactory = LabeledImageFactory(), openCV = cv2, fileSystem = FileSystem())
+    
+    @staticmethod
+    def __CreateResizingImageReader(newSize):
+        imageReader = ImageDataSourceFactory.__CreateStandardImageReader()
+        return ResizingImageReader(imageReader =  imageReader,
+                                   imageResizer = SquaredImageResizer(OpencvImageResizer(), newSize))

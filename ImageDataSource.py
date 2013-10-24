@@ -1,10 +1,10 @@
 class ImageDataSource:
-    def __init__(self, fileSystem, imageReader, sourceFolder, logger = None, loadImagesMatching = lambda x:True):
+    def __init__(self, fileSystem, imageReader, sourceFolder):
         self.fileSystem = fileSystem
         self.imageReader = imageReader
         self.sourceFolder = sourceFolder
-        self.logger = logger
-        self.shouldLoadImage = loadImagesMatching
+        self.logger = None
+        self.shouldLoadImage = lambda x:True
     
     def load(self):
         images = [self.ReadImage(img) 
@@ -20,3 +20,9 @@ class ImageDataSource:
     def logReadingImage(self, img):
         if self.logger is not None:
             self.logger.log("Reading file %s" % img)
+
+    def setLogger(self, logger):
+        self.logger = logger
+    
+    def setFilenamePredicate(self, predicate):
+        self.shouldLoadImage = predicate

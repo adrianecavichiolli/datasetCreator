@@ -53,8 +53,8 @@ class testImageDataSource(unittest.TestCase):
         
         target = ImageDataSource(fileSystem = self.fileSystem, 
                                  imageReader = self.imageReader, 
-                                 sourceFolder = self.sourceFolder,
-                                 logger = logger)
+                                 sourceFolder = self.sourceFolder)
+        target.setLogger(logger)
         target.load()
         
         logger.log.assert_has_calls([call('Reading file %s' % name) for name in ['file.jpg', 'file2.jpg', 'file3.jpg']])
@@ -67,8 +67,8 @@ class testImageDataSource(unittest.TestCase):
         
         target = ImageDataSource(fileSystem = self.fileSystem, 
                                  imageReader = self.imageReader, 
-                                 sourceFolder = self.sourceFolder,
-                                 loadImagesMatching=predicate)
+                                 sourceFolder = self.sourceFolder)
+        target.setFilenamePredicate(predicate)
         target.load()
         
         self.imageReader.read.assert_has_calls([call(self.sourceFolder,'file.jpg'), call(self.sourceFolder,'file3.jpg')])

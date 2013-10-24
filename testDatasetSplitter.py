@@ -13,7 +13,7 @@ class testDatasetSplitter(unittest.TestCase):
         aggregated_result = numpy.concatenate(result).tolist()
         self.assertEqual(sorted(aggregated_result), sorted(items))
         
-    def testSplitIntersectionIsEmpy(self):
+    def testSplitIntersectionIsEmpty(self):
         items = range(15)
         result = self.target.split(items, [.6,.2,.2])
         self.assertEqual(0, len(numpy.intersect1d(result[0], result[1])))

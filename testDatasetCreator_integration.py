@@ -12,7 +12,7 @@ from PreprocessorFactory import PreprocessorFactory
 class TestDatasetCreator(unittest.TestCase):
 
     def test_splitImagesIntoTrainValidAndTest(self):
-        self.initialize(folder = 'small')
+        self.initialize(folder = 'small', classes = [0,1])
         
         expectedDistribution = [0.6, 0.2, 0.2]
 
@@ -24,7 +24,7 @@ class TestDatasetCreator(unittest.TestCase):
         dataset = datasetCreator.buildDataset( datasetSplitIn = expectedDistribution)
         
         convnetBatchCreator.buildBatches(dataset = dataset,
-                                         classes = [0,1], 
+                                         classes = self.classes, 
                                          classNames = self.classNames,  
                                          saveFolder = os.path.join(self.savefolder, self.datasetName))
 
@@ -39,7 +39,7 @@ class TestDatasetCreator(unittest.TestCase):
         self.cleanup()
         
     def test_resizingImages(self):
-        self.initialize(folder = 'resizing')
+        self.initialize(folder = 'resizing', classes = [0,1])
         self.resizeTo = 256
         
         expectedDistribution = [0.6, 0.2, 0.2]
@@ -48,7 +48,7 @@ class TestDatasetCreator(unittest.TestCase):
         imageSource = ImageDataSourceFactory.CreateResizingImageSource(
                                             sourceFolder = self.imgfolder,
                                             newSize = self.resizeTo,
-                                            loadOnlyClasses=[0,1])
+                                            loadOnlyClasses = self.classes)
         
         datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
         convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
@@ -56,7 +56,7 @@ class TestDatasetCreator(unittest.TestCase):
         dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
         
         convnetBatchCreator.buildBatches(dataset = dataset, 
-                                         classes = [0,1], 
+                                         classes = self.classes, 
                                          classNames = self.classNames,  
                                          saveFolder = os.path.join(self.savefolder, self.datasetName))
 
@@ -68,7 +68,7 @@ class TestDatasetCreator(unittest.TestCase):
         self.cleanup()
 
     def test_extractingGridPatches(self):
-        self.initialize(folder = 'resizing')
+        self.initialize(folder = 'resizing', classes = [0,1])
         self.resizeTo = 256
         self.patchSize = 64
         
@@ -81,12 +81,12 @@ class TestDatasetCreator(unittest.TestCase):
         preprocessor = PreprocessorFactory.CreateExtractGridPatches(self.patchSize)
         
         datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource, preprocessor = preprocessor)
-        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
+        convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = 3)
         
         dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
         
         convnetBatchCreator.buildBatches(dataset = dataset, 
-                                         classes = [0,1], 
+                                         classes = self.classes, 
                                          classNames = self.classNames,  
                                          saveFolder = os.path.join(self.savefolder, self.datasetName))
 
@@ -95,7 +95,7 @@ class TestDatasetCreator(unittest.TestCase):
         self.batchesIntersectionsAreEmpty()
         self.metadataReflectsBatchData()
         
-        #self.cleanup()
+        self.cleanup()
         
     def folderWasCreated(self):
         assert os.path.exists(os.path.join(self.savefolder, self.datasetName))
@@ -108,13 +108,13 @@ class TestDatasetCreator(unittest.TestCase):
     def metadataReflectsBatchData(self):
         batchMeta = self.getBatchMeta()
         batchesData = self.getBatchesData()
-        batches = self.joinNumpyArray([batchesData[0], batchesData[1]])
+        batches = self.joinNumpyArray(batchesData[0:-1])
         mean = self.CalculateMean(batches)
         
         self.assertEqual(arrayEqualsTo(mean), batchMeta['data_mean'])
         self.assertTrue(batchMeta['data_in_rows'])
         self.assertEqual(batches.shape[1], batchMeta['num_vis'])
-        self.assertEqual(self.classNames, batchMeta['label_names'])
+        self.assertEqual([self.classNames[i] for i in self.classes], batchMeta['label_names'])
 
     def batchesIntersectionsAreEmpty(self):
         batches = self.getBatchesData()
@@ -216,11 +216,12 @@ class TestDatasetCreator(unittest.TestCase):
     def unPickle(self, filename):
         return cPickle.load(open(filename, 'rb'))
 
-    def initialize(self, folder):
+    def initialize(self, folder, classes):
         self.imgfolder = os.path.join('testdata/',folder)
         self.datasetName = 'result'
         self.savefolder = self.imgfolder
         self.classNames = ['class ' + str(i) for i in range(50)]
+        self.classes = classes
                 
     def cleanup(self):
         if (len(self.savefolder) > 0 and len(self.datasetName) > 0):

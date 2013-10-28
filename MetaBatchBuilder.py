@@ -2,7 +2,7 @@ import numpy
 
 class MetaBatchBuilder:
     
-    def build(self, dataset, classNames):
+    def build(self, dataset, classes, classNames):
         meta = {}
         train = dataset[0]
         valid = dataset[1]
@@ -10,7 +10,7 @@ class MetaBatchBuilder:
         meta['num_vis'] = numImgPixels
         meta['data_mean'] = self.calculateMean(train + valid, numImgPixels).reshape(-1,1)
         meta['data_in_rows'] = True
-        meta['label_names'] = classNames
+        meta['label_names'] = [classNames[i] for i in classes]
         return meta
     
     def calculateMean(self, imgList, imgSize):

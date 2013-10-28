@@ -8,6 +8,9 @@ from cPickleSerializer import cPickleSerializer
 
 class ConvnetBatchCreatorFactory:
     @staticmethod
-    def Create():
-        return ConvnetBatchCreator(BatchBuilder(SingleBatchBuilder(), MetaBatchBuilder()),
-                                   BatchRepository(FileSystem(), cPickleSerializer()))
+    def Create(nTrainingBatches = 1):
+        return ConvnetBatchCreator(BatchBuilder(SingleBatchBuilder(), 
+                                                MetaBatchBuilder(), 
+                                                nTrainingBatches),
+                                   BatchRepository(FileSystem(), 
+                                                   cPickleSerializer()))

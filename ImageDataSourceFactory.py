@@ -1,25 +1,29 @@
 from ImageDataSource import ImageDataSource
 from Filesystem import FileSystem
 from OpencvImgReader import OpenCVImgReader
+from GrayscaleOpencvImgReader import GrayscaleOpenCVImgReader
 from ImageFactory import LabeledImageFactory
 from ResizingImageReader import ResizingImageReader
 from SquaredImageResizer import SquaredImageResizer
 from OpencvImageResizer import OpencvImageResizer
 from TextLogger import TextLogger
 from LabelInFilenamePredicate import LabelInFilenamePredicate
+from GetLabelFromFirstChars import GetLabelFromFirstChars
 import cv2
 
 class ImageDataSourceFactory:
     @staticmethod
-    def Create(sourceFolder, log = False,  loadOnlyClasses = None):
+    def Create(sourceFolder, log = False,  loadOnlyClasses = None, grayScale = False, getLabelFunction = None):
         return ImageDataSourceFactory.CreateWithImageReader(
-                            ImageDataSourceFactory.__CreateStandardImageReader(),
+                            ImageDataSourceFactory.__CreateStandardImageReader(grayScale, getLabelFunction),
                             sourceFolder, log, loadOnlyClasses)
 
     @staticmethod
-    def CreateResizingImageSource(sourceFolder, newSize, log = False, loadOnlyClasses = None):
+    def CreateResizingImageSource(sourceFolder, newSize, log = False, loadOnlyClasses = None, grayScale = False, getLabelFunction = None ):
         return ImageDataSourceFactory.CreateWithImageReader(
-                            ImageDataSourceFactory.__CreateResizingImageReader(newSize),
+                            ImageDataSourceFactory.__CreateResizingImageReader(
+                                        ImageDataSourceFactory.__CreateStandardImageReader(grayScale, getLabelFunction),
+                                        newSize),
                             sourceFolder, log, loadOnlyClasses)
 
     
@@ -36,11 +40,20 @@ class ImageDataSourceFactory:
         return imageDataSource
         
     @staticmethod
-    def __CreateStandardImageReader():
-        return OpenCVImgReader(imageFactory = LabeledImageFactory(), openCV = cv2, fileSystem = FileSystem())
+    def __CreateStandardImageReader(grayScale, getLabelFunction):
+        if getLabelFunction is None:
+            getLabelFunction = GetLabelFromFirstChars(nChars=2)
+        
+        if (not grayScale):
+            return OpenCVImgReader(imageFactory = LabeledImageFactory(getLabelFunction, grayScale),
+                                   openCV = cv2, 
+                                   fileSystem = FileSystem())
+        else:
+            return GrayscaleOpenCVImgReader(imageFactory = LabeledImageFactory(getLabelFunction, grayScale),
+                           openCV = cv2, 
+                           fileSystem = FileSystem())
     
     @staticmethod
-    def __CreateResizingImageReader(newSize):
-        imageReader = ImageDataSourceFactory.__CreateStandardImageReader()
+    def __CreateResizingImageReader(imageReader, newSize):
         return ResizingImageReader(imageReader =  imageReader,
                                    imageResizer = SquaredImageResizer(OpencvImageResizer(), newSize))

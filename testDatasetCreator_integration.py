@@ -97,13 +97,43 @@ class TestDatasetCreator(unittest.TestCase):
         
         self.cleanup()
         
+        
+    def test_grayscaleImages(self):
+        self.initialize(folder = 'resizing', classes = [0,1], grayscale=True)
+        self.resizeTo = 256
+        
+        expectedDistribution = [0.6, 0.2, 0.2]
+        
+
+        imageSource = ImageDataSourceFactory.CreateResizingImageSource(
+                                            sourceFolder = self.imgfolder,
+                                            newSize = self.resizeTo,
+                                            loadOnlyClasses = self.classes,
+                                            grayScale=True)
+        
+        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
+        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
+        
+        dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
+        
+        convnetBatchCreator.buildBatches(dataset = dataset, 
+                                         classes = self.classes, 
+                                         classNames = self.classNames,  
+                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
+
+                
+        self.unionOfBatchesContainAllImages()
+        self.batchesIntersectionsAreEmpty()
+        self.metadataReflectsBatchData()
+        
+        self.cleanup()
     def folderWasCreated(self):
         assert os.path.exists(os.path.join(self.savefolder, self.datasetName))
 
     def unionOfBatchesContainAllImages(self):
         batches = self.joinNumpyArray(self.getBatchesData())
         images = self.joinNumpyArray(self.getImagesAsNumpyArray())
-        assert numpy.all(numpy.sort(batches, axis=0) == numpy.sort(images, axis = 0))
+        numpy.testing.assert_array_equal(numpy.sort(batches, axis=0), numpy.sort(images, axis = 0)) 
 
     def metadataReflectsBatchData(self):
         batchMeta = self.getBatchMeta()
@@ -179,7 +209,10 @@ class TestDatasetCreator(unittest.TestCase):
     def getImages(self):
         files = [f for f in os.listdir(self.imgfolder) 
                  if os.path.splitext(f)[1].lower() == ".jpg"]
-        return [cv2.imread(os.path.join(self.imgfolder,f)) for f in files]
+        if (self.grayscale):
+            return [cv2.imread(os.path.join(self.imgfolder,f), cv2.CV_LOAD_IMAGE_GRAYSCALE) for f in files]
+        else:
+            return [cv2.imread(os.path.join(self.imgfolder,f)) for f in files]
 
     def resizeImage(self, img):
         return cv2.resize(self.makeImageSquared(img), (self.resizeTo, self.resizeTo))
@@ -196,9 +229,12 @@ class TestDatasetCreator(unittest.TestCase):
             return img
         
     def imageToNumpyArray(self, img):
-        imgCopy = numpy.copy(img)
-        imgCopy[:,:,[0,2]] = imgCopy[:,:,[2,0]]
-        return numpy.transpose(imgCopy, (2,0,1)).reshape(1,-1)
+        if (self.grayscale):
+            return img.reshape(1,-1)
+        else:
+            imgCopy = numpy.copy(img)
+            imgCopy[:,:,[0,2]] = imgCopy[:,:,[2,0]]
+            return numpy.transpose(imgCopy, (2,0,1)).reshape(1,-1)
 
     def extractPatchesFromImageList(self, imageList):
         result = []
@@ -216,12 +252,13 @@ class TestDatasetCreator(unittest.TestCase):
     def unPickle(self, filename):
         return cPickle.load(open(filename, 'rb'))
 
-    def initialize(self, folder, classes):
+    def initialize(self, folder, classes, grayscale=False):
         self.imgfolder = os.path.join('testdata/',folder)
         self.datasetName = 'result'
         self.savefolder = self.imgfolder
         self.classNames = ['class ' + str(i) for i in range(50)]
         self.classes = classes
+        self.grayscale=grayscale
                 
     def cleanup(self):
         if (len(self.savefolder) > 0 and len(self.datasetName) > 0):

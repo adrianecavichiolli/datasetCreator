@@ -1,9 +1,10 @@
 class LabelInFilenamePredicate:
-    def __init__(self, acceptedClasses):
+    def __init__(self, getLabelFunction, acceptedClasses):
         self.acceptedClasses = acceptedClasses
+        self.getLabelFunction = getLabelFunction
     
     def __call__(self, img):
         try:
-            return int(img[0:2])-1 in self.acceptedClasses
+            return self.getLabelFunction(img) in self.acceptedClasses
         except:
             return False

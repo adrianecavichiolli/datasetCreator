@@ -16,7 +16,7 @@ class ImageDataSourceFactory:
     def Create(sourceFolder, log = False,  loadOnlyClasses = None, grayScale = False, getLabelFunction = None):
         return ImageDataSourceFactory.CreateWithImageReader(
                             ImageDataSourceFactory.__CreateStandardImageReader(grayScale, getLabelFunction),
-                            sourceFolder, log, loadOnlyClasses)
+                            sourceFolder, log, loadOnlyClasses, getLabelFunction)
 
     @staticmethod
     def CreateResizingImageSource(sourceFolder, newSize, log = False, loadOnlyClasses = None, grayScale = False, getLabelFunction = None ):
@@ -24,11 +24,13 @@ class ImageDataSourceFactory:
                             ImageDataSourceFactory.__CreateResizingImageReader(
                                         ImageDataSourceFactory.__CreateStandardImageReader(grayScale, getLabelFunction),
                                         newSize),
-                            sourceFolder, log, loadOnlyClasses)
+                            sourceFolder, log, loadOnlyClasses, getLabelFunction)
 
     
     @staticmethod
-    def CreateWithImageReader(imageReader, sourceFolder, log = False, loadOnlyClasses = None):
+    def CreateWithImageReader(imageReader, sourceFolder, log = False, loadOnlyClasses = None, getLabelFunction = None):
+        if getLabelFunction is None:
+            getLabelFunction = GetLabelFromFirstChars(nChars=2)
         imageDataSource =  ImageDataSource(fileSystem = FileSystem(),
                               imageReader = imageReader,
                               sourceFolder = sourceFolder)
@@ -36,7 +38,7 @@ class ImageDataSourceFactory:
         if log:
             imageDataSource.setLogger(TextLogger())
         if loadOnlyClasses is not None:
-            imageDataSource.setFilenamePredicate(LabelInFilenamePredicate(loadOnlyClasses))
+            imageDataSource.setFilenamePredicate(LabelInFilenamePredicate(getLabelFunction, loadOnlyClasses))
         return imageDataSource
         
     @staticmethod

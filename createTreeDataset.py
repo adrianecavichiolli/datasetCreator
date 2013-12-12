@@ -5,7 +5,6 @@ from PreprocessorFactory import PreprocessorFactory
 from GetLabelFromFirstChars import GetLabelFromFirstChars
 from ImageOps import grayscale
 
-sourceFolder = '/home/especial/vri/databases/florestais-macro'
 
 def createDataset_halfToTest():
     saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesallclasses'
@@ -30,12 +29,12 @@ def createDataset_halfToTest():
                                      saveFolder = saveFolder)
 
 def createDataset_nopatches():
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesnopatches64'
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesnopatches320'
     expectedDistribution = [0.35, 0.15, 0.5]
 
     imageSource = ImageDataSourceFactory.CreateResizingImageSource(
                       sourceFolder = sourceFolder,
-                      newSize = 64, log=True, 
+                      newSize = 320, log=True, 
                       loadOnlyClasses=range(41))
 
     datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
@@ -50,9 +49,9 @@ def createDataset_nopatches():
     
 
 def createDatasetMicro_nopatches():
-    sourceFolder = '/home/especial/vri/databases/florestais-micro'
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesmicro_640'
-    expectedDistribution = [0.35, 0.15, 0.5]
+    sourceFolder = '/home/gustavo/mestrado/datasetmicro'
+    saveFolder  = '/home/gustavo/dev/bibliotecas/pylearn2/data/treesmicro_640_50train'
+    expectedDistribution = [0.5, 0.2, 0.3]
 
     imageSource = ImageDataSourceFactory.CreateResizingImageSource(
                       sourceFolder = sourceFolder,

@@ -7,8 +7,8 @@ from ImageOps import grayscale
 
 
 def createDataset_nopatches():
-    sourceFolder  = '/home/gustavo/dev/bibliotecas/pylearn2/data/month-cropped-black'
-    saveFolder = '/home/gustavo/dev/bibliotecas/pylearn2/data/month-cropped-black-nopatches'
+    sourceFolder  = '/home/especial/vri/databases/month-cropped-black/'
+    saveFolder = 'month-cropped-resized'
     expectedDistribution = [0.5, 0.2, 0.3]
 
     imageSource = ImageDataSourceFactory.CreateResizingImageSource(
@@ -30,7 +30,7 @@ def createDataset_nopatches():
 
 
 def createDataset_patches():
-    sourceFolder  = '/home/gustavo/dev/bibliotecas/pylearn2/data/month-cropped-black'
+    sourceFolder  = '/home/especial/vri/databases/month-cropped-black/'
     saveFolder = '/home/gustavo/dev/bibliotecas/pylearn2/data/month-cropped-black-patches'
     expectedDistribution = [0.5, 0.2, 0.3]
 

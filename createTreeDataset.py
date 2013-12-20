@@ -29,12 +29,13 @@ def createDataset_halfToTest():
                                      saveFolder = saveFolder)
 
 def createDataset_nopatches():
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesnopatches320'
+    sourceFolder = '/home/especial/vri/databases/florestais-macro'
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesnopatches256_3'
     expectedDistribution = [0.35, 0.15, 0.5]
 
     imageSource = ImageDataSourceFactory.CreateResizingImageSource(
                       sourceFolder = sourceFolder,
-                      newSize = 320, log=True, 
+                      newSize = 256, log=True, 
                       loadOnlyClasses=range(41))
 
     datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
@@ -49,14 +50,13 @@ def createDataset_nopatches():
     
 
 def createDatasetMicro_nopatches():
-    sourceFolder = '/home/gustavo/mestrado/datasetmicro'
-    saveFolder  = '/home/gustavo/dev/bibliotecas/pylearn2/data/treesmicro_640_50train'
+    sourceFolder = '/home/especial/vri/databases/florestais-micro'
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesmicro_640_50train_3'
     expectedDistribution = [0.5, 0.2, 0.3]
 
     imageSource = ImageDataSourceFactory.CreateResizingImageSource(
                       sourceFolder = sourceFolder,
                       newSize = 640, log=True,
-                      loadOnlyClasses=range(112),
                       getLabelFunction = GetLabelFromFirstChars(nChars=3),
                       grayScale = True)
 
@@ -71,5 +71,5 @@ def createDatasetMicro_nopatches():
                                      saveFolder = saveFolder)
 if __name__ == '__main__':
     #createDataset_halfToTest()
-    #createDataset_nopatches()
-    createDatasetMicro_nopatches()
+    createDataset_nopatches()
+    #createDatasetMicro_nopatches()

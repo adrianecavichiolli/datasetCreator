@@ -7,3 +7,11 @@ class DatasetCreatorFactory:
         return DatasetCreator(imageSource = imageSource,
                               datasetSplitter =  ClassBalancingDatasetSplitter(),
 							  preprocessor = preprocessor)
+
+    @staticmethod
+    def CreateWithPredicateSplitter(imageSource, imgNumbersInValid, imgNumbersInTest, preprocessor = None):
+        return DatasetCreator(imageSource = imageSource,
+                              datasetSplitter = PredicateDatasetSplitter(
+                                  shouldBeInValid = FileNumberRegexMatcher(imgNumbersInValid),
+                                  shouldBeInTest = FileNumberRegexMatcher(imgNumbersInTest)),
+							  preprocessor = preprocessor)

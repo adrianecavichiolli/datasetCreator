@@ -5,8 +5,8 @@ class FileNumberRegexMatcher:
         self.numbers = numbers
         self.regex = re.compile(regex)
 
-    def __call__(self, filename):
-        match = self.regex.match(filename)
+    def __call__(self, image):
+        match = self.regex.match(image.getFilename())
         if match is not None:
             number = int(match.group(1))
             if number in self.numbers:

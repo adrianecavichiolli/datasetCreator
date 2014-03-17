@@ -14,9 +14,9 @@ class testSquaredImageResizer(unittest.TestCase):
         source[:,:,2] =  [[8,9], [10,11]]
         
         target = SquaredImageResizer(self.imageResizer, 2)
-        target.resize(source)
+        target(source)
 
-        numpy.testing.assert_array_equal(source, target.resize(source))
+        numpy.testing.assert_array_equal(source, target(source))
         
     def test_squaredImage_CallResizeWithImage(self):
         source = numpy.zeros((10,10,3))
@@ -24,7 +24,7 @@ class testSquaredImageResizer(unittest.TestCase):
         self.imageResizer.resize.return_value = resized = Mock()
 
         target = SquaredImageResizer(self.imageResizer, 5)
-        result = target.resize(source)
+        result = target(source)
         
         self.assertEquals(result, resized)
         self.imageResizer.resize.assert_called_with(arrayEqualsTo(source), (5,5))
@@ -39,7 +39,7 @@ class testSquaredImageResizer(unittest.TestCase):
         source[:,5:15,:] = expected
         
         target = SquaredImageResizer(self.imageResizer, 10)
-        target.resize(source)
+        target(source)
         
         self.imageResizer.resize.assert_called_with(arrayEqualsTo(expected), (10,10))
         
@@ -53,7 +53,7 @@ class testSquaredImageResizer(unittest.TestCase):
         source[5:15,:,:] = expected
         
         target = SquaredImageResizer(self.imageResizer, 10)
-        target.resize(source)
+        target(source)
         
         self.imageResizer.resize.assert_called_with(arrayEqualsTo(expected), (10,10))
     
@@ -64,6 +64,6 @@ class testSquaredImageResizer(unittest.TestCase):
         source[5:15,:] = expected
         
         target = SquaredImageResizer(self.imageResizer, 10)
-        target.resize(source)
+        target(source)
         
         self.imageResizer.resize.assert_called_with(arrayEqualsTo(expected), (10,10))

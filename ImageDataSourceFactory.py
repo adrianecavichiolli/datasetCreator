@@ -3,7 +3,7 @@ from Filesystem import FileSystem
 from OpencvImgReader import OpenCVImgReader
 from GrayscaleOpencvImgReader import GrayscaleOpenCVImgReader
 from ImageFactory import LabeledImageFactory
-from ResizingImageReader import ResizingImageReader
+from ImageReaderDecorator import ImageReaderDecorator
 from SquaredImageResizer import SquaredImageResizer
 from OpencvImageResizer import OpencvImageResizer
 from TextLogger import TextLogger
@@ -57,5 +57,5 @@ class ImageDataSourceFactory:
     
     @staticmethod
     def __CreateResizingImageReader(imageReader, newSize):
-        return ResizingImageReader(imageReader =  imageReader,
-                                   imageResizer = SquaredImageResizer(OpencvImageResizer(), newSize))
+        return ImageReaderDecorator(imageReader =  imageReader,
+                                   decorator = SquaredImageResizer(OpencvImageResizer(), newSize))

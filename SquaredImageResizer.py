@@ -3,7 +3,7 @@ class SquaredImageResizer:
         self.imageResizer = imageResizer
         self.newSize = (newSize, newSize)
     
-    def resize(self, image):
+    def __call__(self, image):
         if (self.imageAlreadyHasCorrectSize(image)):
             return image
         

@@ -1,3 +1,5 @@
+import numpy
+
 class PredicateDatasetSplitter:
     def __init__(self, shouldBeInValid, shouldBeInTest):
         self.shouldBeInValid = shouldBeInValid
@@ -8,6 +10,7 @@ class PredicateDatasetSplitter:
         valid =[]
         test = []
         
+        numpy.random.shuffle(data)
         for item in data:
             if self.shouldBeInValid(item):
                 valid.append(item)

@@ -1,5 +1,7 @@
 from ClassBalancingDatasetSplitter import ClassBalancingDatasetSplitter
 from DatasetCreator import DatasetCreator 
+from PredicateDatasetSplitter import PredicateDatasetSplitter
+from FileNumberRegexMatcher import FileNumberRegexMatcher
 
 class DatasetCreatorFactory:
     @staticmethod

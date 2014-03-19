@@ -1,6 +1,7 @@
 from ClassBalancingDatasetSplitter import ClassBalancingDatasetSplitter
 from DatasetCreator import DatasetCreator 
 from PredicateDatasetSplitter import PredicateDatasetSplitter
+from FileGroupingDatasetSplitter import FileGroupingDatasetSplitter
 from FileNumberRegexMatcher import FileNumberRegexMatcher
 
 class DatasetCreatorFactory:
@@ -16,4 +17,10 @@ class DatasetCreatorFactory:
                               datasetSplitter = PredicateDatasetSplitter(
                                   shouldBeInValid = FileNumberRegexMatcher(imgNumbersInValid),
                                   shouldBeInTest = FileNumberRegexMatcher(imgNumbersInTest)),
+							  preprocessor = preprocessor)
+
+    @staticmethod
+    def CreateWithFileGroupingSplitter(imageSource, numFilePerImage, preprocessor = None):
+        return DatasetCreator(imageSource = imageSource,
+                              datasetSplitter = FileGroupingDatasetSplitter(numFilePerImage),
 							  preprocessor = preprocessor)

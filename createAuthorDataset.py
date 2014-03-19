@@ -15,7 +15,37 @@ from Filesystem import FileSystem
 
 def createDatasetBFL_256():
     sourceFolder = '/home/especial/vri/databases/autoria/BFL'
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/BFL_64_inv'
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/BFL_64'
+    expectedDistribution = [0.5, 0.2, 0.3]
+
+
+    getLabelFunction = GetLabelFromFirstChars(nChars=3)
+    imageReader = GrayscaleOpenCVImgReader(imageFactory = LabeledImageFactory(getLabelFunction, True),
+                           openCV = cv2, 
+                           fileSystem = FileSystem())
+
+    imageSource = ImageDataSourceFactory.CreateWithImageReader(
+                      imageReader = imageReader,
+                      sourceFolder = sourceFolder,
+                      log=True, 
+                      getLabelFunction = getLabelFunction)
+
+    datasetCreator = DatasetCreatorFactory.CreateWithPredicateSplitter(
+                            imageSource = imageSource,
+                            imgNumbersInValid = range(10,19),
+                            imgNumbersInTest = range(19,28))
+
+    dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
+    convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = 3)
+        
+    convnetBatchCreator.buildBatches(dataset = dataset, 
+                                     classes = range(315), 
+                                     classNames = range(315),  
+                                     saveFolder = saveFolder)
+
+def createDatasetBFL_256_inv():
+    sourceFolder = '/home/especial/vri/databases/autoria/BFL'
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/BFL_64_inv_split'
     expectedDistribution = [0.5, 0.2, 0.3]
 
 
@@ -33,10 +63,8 @@ def createDatasetBFL_256():
                       log=True, 
                       getLabelFunction = getLabelFunction)
 
-    datasetCreator = DatasetCreatorFactory.CreateWithPredicateSplitter(
-                            imageSource = imageSource,
-                            imgNumbersInValid = range(10,19),
-                            imgNumbersInTest = range(19,28))
+    datasetCreator = DatasetCreatorFactory.CreateWithFileGroupingSplitter(imageSource = imageSource,
+                                                    numFilePerImage = 9)
 
     dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
     convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = 3)
@@ -68,5 +96,5 @@ def createDatasetIAM():
                                      saveFolder = saveFolder)
 
 if __name__ == '__main__':
-    createDatasetBFL_256()
+    createDatasetBFL_256_inv()
     #createDatasetIAM()

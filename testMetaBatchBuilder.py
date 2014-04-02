@@ -7,6 +7,7 @@ from TestUtils import arrayEqualsTo
 class testMetaBatchBuilder(unittest.TestCase):
     def setUp(self):
         self.target = MetaBatchBuilder()
+        self.data_shape = (4,1,1)
     
     def test_dataMeanDoesNotConsiderTestSet(self):
         
@@ -23,6 +24,7 @@ class testMetaBatchBuilder(unittest.TestCase):
         
         expected = {}
         expected['num_vis'] = 4
+        expected['data_shape'] = self.data_shape
         expected['data_in_rows']  = True
         expected['label_names'] = classesNames
         expected['data_mean'] = arrayEqualsTo(numpy.asarray([15, 30, 40, 70]).reshape(-1,1))
@@ -42,6 +44,7 @@ class testMetaBatchBuilder(unittest.TestCase):
         expected = {}
         expected['num_vis'] = 4
         expected['data_in_rows']  = True
+        expected['data_shape'] = self.data_shape
         expected['label_names'] = ['class2', 'class1']
         expected['data_mean'] = arrayEqualsTo(numpy.zeros(4).reshape(-1,1))
 
@@ -53,6 +56,7 @@ class testMetaBatchBuilder(unittest.TestCase):
     def makeImage(self, array):
         image = Mock()
         image.getArray.return_value = numpy.asarray(array)
+        image.getShape.return_value = self.data_shape
         return image
 
 if __name__ == '__main__':

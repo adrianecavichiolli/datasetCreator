@@ -8,6 +8,7 @@ class MetaBatchBuilder:
         valid = dataset[1]
         numImgPixels = train[0].getArray().shape[0]
         meta['num_vis'] = numImgPixels
+        meta['data_shape'] = train[0].getShape()
         meta['data_mean'] = self.calculateMean(train + valid, numImgPixels).reshape(-1,1)
         meta['data_in_rows'] = True
         meta['label_names'] = [classNames[i] for i in classes]

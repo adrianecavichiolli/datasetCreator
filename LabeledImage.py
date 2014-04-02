@@ -19,6 +19,9 @@ class LabeledImage:
         else:
             return numpy.transpose(self.image, (2,0,1)).reshape(-1)
     
+    def getShape(self):
+        return self.image.shape
+    
     def createCopyWithImage(self, newImage):
         return LabeledImage(newImage, self.filename, self.label, self.grayscale)
     

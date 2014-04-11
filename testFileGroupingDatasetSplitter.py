@@ -28,10 +28,6 @@ class testFileGroupingDatasetSplitter(unittest.TestCase):
         target = FileGroupingDatasetSplitter(9)
         result = target.split(items, [.6,.2,.2])
 
-        print sorted([img.getFilename() for img in result[0] if img.getFilename()[0:3] == "001"])
-        print sorted([img.getFilename() for img in result[1] if img.getFilename()[0:3] == "001"])
-        print sorted([img.getFilename() for img in result[2] if img.getFilename()[0:3] == "001"])
-
         totalAfterSplit = self.joinLists(result)
         
         self.assertEqual(sorted(totalAfterSplit), sorted(items))

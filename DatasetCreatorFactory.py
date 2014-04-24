@@ -3,6 +3,8 @@ from DatasetCreator import DatasetCreator
 from PredicateDatasetSplitter import PredicateDatasetSplitter
 from FileGroupingDatasetSplitter import FileGroupingDatasetSplitter
 from FileNumberRegexMatcher import FileNumberRegexMatcher
+from GetSampleNumberFromFilename import GetSampleNumberFromFilename
+from SampleGroupingDatasetSplitter import SampleGroupingDatasetSplitter
 
 class DatasetCreatorFactory:
     @staticmethod
@@ -23,4 +25,12 @@ class DatasetCreatorFactory:
     def CreateWithFileGroupingSplitter(imageSource, numFilePerImage, preprocessor = None):
         return DatasetCreator(imageSource = imageSource,
                               datasetSplitter = FileGroupingDatasetSplitter(numFilePerImage),
+							  preprocessor = preprocessor)
+
+    @staticmethod
+    def CreateWithSampleGroupingSplitter(imageSource, preprocessor = None, GetSampleNumberFunction = None):
+        if GetSampleNumberFunction is None:
+            GetSampleNumberFunction = GetSampleNumberFromFilename()
+        return DatasetCreator(imageSource = imageSource,
+                              datasetSplitter = SampleGroupingDatasetSplitter(GetSampleNumberFunction),
 							  preprocessor = preprocessor)

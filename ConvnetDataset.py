@@ -17,13 +17,16 @@ from OpencvImgReader import OpenCVImgReader
 from GetSampleNumberFromFilename import GetSampleNumberFromFilename
 from ClassBalancingDatasetSplitter import ClassBalancingDatasetSplitter
 from SquaredImageResizer import SquaredImageResizer
+from GetLabelFromLookup import GetLabelFromLookup
+from SampleGroupingDatasetSplitter import SampleGroupingDatasetSplitter
+from FileGroupingDatasetSplitter import FileGroupingDatasetSplitter
 
 #Functions to get the label from a filename
 def LabelFromFirstChars(nChars):
     return GetLabelFromFirstChars(nChars)
 
 def LabelFromList(listOfNames, separator = "_"):
-    return GetLabelFromLookup(classNames, separator)
+    return GetLabelFromLookup(listOfNames, separator)
 
 #Functions to Resize the images
 def ResizeByPercent(percent):
@@ -36,10 +39,14 @@ def ResizeToSquare(newSize):
 def ClassBalancingSplit():
     return ClassBalancingDatasetSplitter()
 
-def GroupingSplit(GetSampleGroupFunction):
+def GroupingSplit(GetSampleNumberFunction = None):
     if GetSampleNumberFunction is None:
         GetSampleNumberFunction = GetSampleNumberFromFilename()
+
     return SampleGroupingDatasetSplitter(GetSampleNumberFunction)
+
+def FileGroupingSplit(numFilePerImage):
+    return FileGroupingDatasetSplitter(numFilePerImage)
 
 #Preprocessors
 def ExtractGridPatches(patchSize):

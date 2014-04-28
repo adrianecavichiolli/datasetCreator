@@ -1,20 +1,4 @@
-from DatasetCreatorFactory import DatasetCreatorFactory
-from ImageDataSourceFactory import ImageDataSourceFactory
-from ConvnetBatchCreatorFactory import ConvnetBatchCreatorFactory
-from PreprocessorFactory import PreprocessorFactory
-from GetLabelFromFirstChars import GetLabelFromFirstChars
-from GrayscaleOpencvImgReader import GrayscaleOpenCVImgReader
-from ImageReaderDecorator import ImageReaderDecorator
-from ImageOps import grayscale
-from ImageFactory import LabeledImageFactory
-from GetLabelFromFirstChars import GetLabelFromFirstChars
-from GetLabelFromLookup import *
-import cv2
-from ImageInverter import ImageInverter
-from Filesystem import FileSystem
-from PercentageImageResizer import PercentageImageResizer
-from OpencvImageResizer import OpencvImageResizer
-
+from ConvnetDataset import *
 
 def getBrodatzClasses():
     return ['bark', 'beachsand', 'beans', 'burlap', 'd10', 'd11', 'd4', 'd5', 'd51',
@@ -25,28 +9,20 @@ def getBrodatzClasses():
 
 def createDatasetBrodatz():
     sourceFolder = '/home/especial/vri/databases/brodatz/as_png'
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/brodatz'
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/brodatz' 
     expectedDistribution = [0.3, 0.2, 0.5]
 
     classNames = getBrodatzClasses()
-    getLabelFunction = GetLabelFromLookup(classNames = classNames, separator = "_")
+    classNumbers = range(len(classNames))
 
-    imageSource = ImageDataSourceFactory.Create(
-                      sourceFolder = sourceFolder,
-                      log=True, 
-                      grayScale = True,
-                      getLabelFunction = getLabelFunction)
-
-
-    datasetCreator = DatasetCreatorFactory.CreateWithSampleGroupingSplitter(imageSource = imageSource)
-
-    dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
-    convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = 3)
-        
-    convnetBatchCreator.buildBatches(dataset = dataset, 
-                                     classes = range(len(classNames)), 
-                                     classNames = classNames,  
-                                     saveFolder = saveFolder)
+    ConvnetDataset.CreateConvNetDataset(SourceFolder = sourceFolder, 
+                                            TargetFolder = saveFolder,
+                                            ExpectedDistribution = expectedDistribution,
+                                            GetLabelsFrom = LabelFromList(classNames),
+                                            Classes = classNumbers,
+                                            ClassNames = classNames,
+                                            SplitFunction = GroupingSplit(),
+                                            Grayscale = True)
 
 if __name__ == '__main__':
     createDatasetBrodatz()

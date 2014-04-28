@@ -14,6 +14,12 @@ class DatasetCreatorFactory:
 							  preprocessor = preprocessor)
 
     @staticmethod
+    def CreateWithSplitter(imageSource, datasetSplitter, preprocessor = None):
+        return DatasetCreator(imageSource = imageSource,
+                              datasetSplitter = datasetSplitter,
+							  preprocessor = preprocessor)
+
+    @staticmethod
     def CreateWithPredicateSplitter(imageSource, imgNumbersInValid, imgNumbersInTest, preprocessor = None):
         return DatasetCreator(imageSource = imageSource,
                               datasetSplitter = PredicateDatasetSplitter(

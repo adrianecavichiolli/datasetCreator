@@ -8,6 +8,7 @@ from DatasetCreatorFactory import DatasetCreatorFactory
 from ImageDataSourceFactory import ImageDataSourceFactory
 from ConvnetBatchCreatorFactory import ConvnetBatchCreatorFactory
 from PreprocessorFactory import PreprocessorFactory
+from ConvnetDataset import *
 
 class TestDatasetCreator(unittest.TestCase):
 
@@ -16,19 +17,15 @@ class TestDatasetCreator(unittest.TestCase):
         
         expectedDistribution = [0.6, 0.2, 0.2]
 
-        imageSource = ImageDataSourceFactory.Create(sourceFolder = self.imgfolder)
-        
-        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
-        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
-        
-        dataset = datasetCreator.buildDataset( datasetSplitIn = expectedDistribution)
-        
-        convnetBatchCreator.buildBatches(dataset = dataset,
-                                         classes = self.classes, 
-                                         classNames = self.classNames,  
-                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
+        saveFolder = os.path.join(self.savefolder, self.datasetName)
+        ConvnetDataset.CreateConvNetDataset(SourceFolder = self.imgfolder, 
+                                            TargetFolder = saveFolder,
+                                            ExpectedDistribution = expectedDistribution,
+                                            Classes = [0,1],
+                                            ClassNames = self.classNames,
+                                            NumTrainBatches = 1,
+                                            Log = False)
 
-                
         self.unionOfBatchesContainAllImages()
         self.assertNumberOfBatches(3)
         self.batchesIntersectionsAreEmpty()
@@ -43,24 +40,17 @@ class TestDatasetCreator(unittest.TestCase):
         self.resizeTo = 256
         
         expectedDistribution = [0.6, 0.2, 0.2]
-        
 
-        imageSource = ImageDataSourceFactory.CreateResizingImageSource(
-                                            sourceFolder = self.imgfolder,
-                                            newSize = self.resizeTo,
-                                            loadOnlyClasses = self.classes)
-        
-        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
-        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
-        
-        dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
-        
-        convnetBatchCreator.buildBatches(dataset = dataset, 
-                                         classes = self.classes, 
-                                         classNames = self.classNames,  
-                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
+        saveFolder = os.path.join(self.savefolder, self.datasetName)
+        ConvnetDataset.CreateConvNetDataset(SourceFolder = self.imgfolder, 
+                                            TargetFolder = saveFolder,
+                                            ExpectedDistribution = expectedDistribution,
+                                            Classes = [0,1],
+                                            ResizeBy = ResizeToSquare(self.resizeTo),
+                                            ClassNames = self.classNames,
+                                            NumTrainBatches = 1,
+                                            Log = False)
 
-                
         self.unionOfBatchesContainAllImages()
         self.batchesIntersectionsAreEmpty()
         self.metadataReflectsBatchData()
@@ -71,26 +61,20 @@ class TestDatasetCreator(unittest.TestCase):
         self.initialize(folder = 'resizing', classes = [0,1])
         self.resizeTo = 256
         self.patchSize = 64
-        
         expectedDistribution = [0.6, 0.2, 0.2]
         
-        imageSource = ImageDataSourceFactory.CreateResizingImageSource(
-                                            sourceFolder = self.imgfolder,
-                                            newSize = self.resizeTo)
-        
-        preprocessor = PreprocessorFactory.CreateExtractGridPatches(self.patchSize)
-        
-        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource, preprocessor = preprocessor)
-        convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = 3)
-        
-        dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
-        
-        convnetBatchCreator.buildBatches(dataset = dataset, 
-                                         classes = self.classes, 
-                                         classNames = self.classNames,  
-                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
+        saveFolder = os.path.join(self.savefolder, self.datasetName)
+        ConvnetDataset.CreateConvNetDataset(SourceFolder = self.imgfolder, 
+                                            TargetFolder = saveFolder,
+                                            ExpectedDistribution = expectedDistribution,
+                                            Classes = [0,1],
+                                            ResizeBy = ResizeToSquare(self.resizeTo),
+                                            Preprocessor = ExtractGridPatches(self.patchSize),
+                                            ClassNames = self.classNames,
+                                            NumTrainBatches = 3,
+                                            Log = False)
 
-                
+        
         self.unionOfBatchesContainAllImages()
         self.batchesIntersectionsAreEmpty()
         self.metadataReflectsBatchData()
@@ -105,28 +89,23 @@ class TestDatasetCreator(unittest.TestCase):
         expectedDistribution = [0.6, 0.2, 0.2]
         
 
-        imageSource = ImageDataSourceFactory.CreateResizingImageSource(
-                                            sourceFolder = self.imgfolder,
-                                            newSize = self.resizeTo,
-                                            loadOnlyClasses = self.classes,
-                                            grayScale=True)
-        
-        datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
-        convnetBatchCreator = ConvnetBatchCreatorFactory.Create()
-        
-        dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
-        
-        convnetBatchCreator.buildBatches(dataset = dataset, 
-                                         classes = self.classes, 
-                                         classNames = self.classNames,  
-                                         saveFolder = os.path.join(self.savefolder, self.datasetName))
+        saveFolder = os.path.join(self.savefolder, self.datasetName)
+        ConvnetDataset.CreateConvNetDataset(SourceFolder = self.imgfolder, 
+                                            TargetFolder = saveFolder,
+                                            ExpectedDistribution = expectedDistribution,
+                                            Classes = [0,1],
+                                            Grayscale = 1,
+                                            ResizeBy = ResizeToSquare(self.resizeTo),
+                                            ClassNames = self.classNames,
+                                            NumTrainBatches = 1,
+                                            Log = False)
 
-                
         self.unionOfBatchesContainAllImages()
         self.batchesIntersectionsAreEmpty()
         self.metadataReflectsBatchData()
         
         self.cleanup()
+
     def folderWasCreated(self):
         assert os.path.exists(os.path.join(self.savefolder, self.datasetName))
 

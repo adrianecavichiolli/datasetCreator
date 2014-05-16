@@ -59,6 +59,21 @@ class ConvnetDataset:
                 GetLabelsFrom = LabelFromFirstChars(2), 
                 Grayscale = False, InvertColor = False, ResizeBy = None,
                 Preprocessor = None, SplitFunction = ClassBalancingSplit(), NumTrainBatches = 3, Log  = True):
+        dataset = ConvnetDataset.CreateDataset(SourceFolder, TargetFolder, ExpectedDistribution, Classes,
+                                                ClassNames, GetLabelsFrom, Grayscale, InvertColor, ResizeBy, Preprocessor,
+                                                SplitFunction, NumTrainBatches, Log)
+        convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = NumTrainBatches)
+        
+        convnetBatchCreator.buildBatches(dataset = dataset, 
+                                     classes = Classes,
+                                     classNames = ClassNames,
+                                     saveFolder = TargetFolder)
+
+    @staticmethod
+    def CreateDataset(SourceFolder, TargetFolder, ExpectedDistribution, Classes, ClassNames,
+                GetLabelsFrom = LabelFromFirstChars(2), 
+                Grayscale = False, InvertColor = False, ResizeBy = None,
+                Preprocessor = None, SplitFunction = ClassBalancingSplit(), NumTrainBatches = 3, Log  = True):
 
         if Grayscale:
             imageReader = GrayscaleOpenCVImgReader(
@@ -83,6 +98,7 @@ class ConvnetDataset:
                       imageReader = imageReader,
                       sourceFolder = SourceFolder,
                       log = Log,
+                      loadOnlyClasses = Classes,
                       getLabelFunction = GetLabelsFrom)
 
 
@@ -91,11 +107,5 @@ class ConvnetDataset:
                             datasetSplitter = SplitFunction,
                             preprocessor = Preprocessor)
 
-        dataset = datasetCreator.buildDataset(datasetSplitIn = ExpectedDistribution)
+        return datasetCreator.buildDataset(datasetSplitIn = ExpectedDistribution)
 
-        convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = NumTrainBatches)
-        
-        convnetBatchCreator.buildBatches(dataset = dataset, 
-                                     classes = Classes,
-                                     classNames = ClassNames,
-                                     saveFolder = TargetFolder)

@@ -1,25 +1,6 @@
 
 from ConvnetDataset import *
-
-def SplitGenreDataset(dataset, numRows, numCols):
-    original_image_size = dataset[0][0].getShape()
-    numPatches = numRows * numCols
-    rowSize = original_image_size[0] / numRows
-    colSize = original_image_size[1] / numCols
-
-    allDatasets = []
-    for set in dataset:
-        thisSet = [list() for i in xrange(numPatches)]
-        for image in set:
-            for i in xrange(numRows):
-                for j in xrange(numCols):
-                    patchIndex = i * numCols + j
-                    imagePatch = image.image[i * rowSize: (i+1) * rowSize, 
-                                             j * colSize: (j+1) * colSize]
-                    newImage = image.createCopyWithImage(imagePatch)
-                    thisSet[patchIndex].append(newImage)
-        allDatasets.append(thisSet)
-    return allDatasets
+from DatasetGridExtractor import DatasetGridExtractor
 
 def createDatasetGenre_point6():
     sourceFolder = '/home/especial/vri/databases/generos_musicais/classinname'
@@ -36,7 +17,10 @@ def createDatasetGenre_point6():
                                             Classes = classNumbers,
                                             ClassNames = classNames,
                                             Grayscale = True)
-    datasets = SplitGenreDataset(dataset, 10, 3)
+
+    gridExtractor = DatasetGridExtractor()
+    datasets = gridExtractor.run(numRows = 10, numCols = 3)
+
 
     mydata = (datasets[0][0], datasets[1][0], datasets[2][0])
     convnetBatchCreator.buildBatches(dataset = mydata, 

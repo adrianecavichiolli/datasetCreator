@@ -20,6 +20,7 @@ from SquaredImageResizer import SquaredImageResizer
 from GetLabelFromLookup import GetLabelFromLookup
 from SampleGroupingDatasetSplitter import SampleGroupingDatasetSplitter
 from FileGroupingDatasetSplitter import FileGroupingDatasetSplitter
+from FixedDatasetSplitter import FixedDatasetSplitter
 
 from LazyLoadedImageReader import LazyLoadedImageReader
 from LazyLoadedImageFactory import LazyLoadedImageFactory
@@ -51,6 +52,9 @@ def GroupingSplit(GetSampleNumberFunction = None):
 
 def FileGroupingSplit(numFilePerImage, shuffle=True):
     return FileGroupingDatasetSplitter(numFilePerImage, shuffle)
+
+def SplitUsingFixedList(files_in_train, files_in_valid, files_in_test):
+    return FixedDatasetSplitter(files_in_train, files_in_train, files_in_test)
 
 #Preprocessors
 def ExtractGridPatches(patchSize):

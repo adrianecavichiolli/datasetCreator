@@ -50,8 +50,8 @@ def createDataset_nopatches():
     
 
 def createDatasetMicro_nopatches():
-    sourceFolder = '/home/especial/vri/databases/florestais-micro'
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesmicro_640_50train_3'
+    sourceFolder = '/home/especial/vri/databases/florestais/florestais-micro'
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/treesmicro'
     expectedDistribution = [0.5, 0.2, 0.3]
 
     imageSource = ImageDataSourceFactory.CreateResizingImageSource(
@@ -63,7 +63,7 @@ def createDatasetMicro_nopatches():
     datasetCreator = DatasetCreatorFactory.Create(imageSource = imageSource)
 
     dataset = datasetCreator.buildDataset(datasetSplitIn = expectedDistribution)
-    convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = 3)
+    convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = 1)
         
     convnetBatchCreator.buildBatches(dataset = dataset, 
                                      classes = range(112), 
@@ -71,5 +71,5 @@ def createDatasetMicro_nopatches():
                                      saveFolder = saveFolder)
 if __name__ == '__main__':
     #createDataset_halfToTest()
-    createDataset_nopatches()
-    #createDatasetMicro_nopatches()
+    #createDataset_nopatches()
+    createDatasetMicro_nopatches()

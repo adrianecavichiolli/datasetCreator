@@ -21,6 +21,10 @@ from GetLabelFromLookup import GetLabelFromLookup
 from SampleGroupingDatasetSplitter import SampleGroupingDatasetSplitter
 from FileGroupingDatasetSplitter import FileGroupingDatasetSplitter
 
+from LazyLoadedImageReader import LazyLoadedImageReader
+from LazyLoadedImageFactory import LazyLoadedImageFactory
+from ImageLoader import ImageLoader
+
 #Functions to get the label from a filename
 def LabelFromFirstChars(nChars):
     return GetLabelFromFirstChars(nChars)
@@ -45,8 +49,8 @@ def GroupingSplit(GetSampleNumberFunction = None):
 
     return SampleGroupingDatasetSplitter(GetSampleNumberFunction)
 
-def FileGroupingSplit(numFilePerImage):
-    return FileGroupingDatasetSplitter(numFilePerImage)
+def FileGroupingSplit(numFilePerImage, shuffle=True):
+    return FileGroupingDatasetSplitter(numFilePerImage, shuffle)
 
 #Preprocessors
 def ExtractGridPatches(patchSize):
@@ -58,10 +62,11 @@ class ConvnetDataset:
     def CreateConvNetDataset(SourceFolder, TargetFolder, ExpectedDistribution, Classes, ClassNames,
                 GetLabelsFrom = LabelFromFirstChars(2), 
                 Grayscale = False, InvertColor = False, ResizeBy = None,
-                Preprocessor = None, SplitFunction = ClassBalancingSplit(), NumTrainBatches = 3, Log  = True):
+                Preprocessor = None, SplitFunction = ClassBalancingSplit(), NumTrainBatches = 3, Log  = True,
+                LazyLoadedImages = False):
         dataset = ConvnetDataset.CreateDataset(SourceFolder, TargetFolder, ExpectedDistribution, Classes,
                                                 ClassNames, GetLabelsFrom, Grayscale, InvertColor, ResizeBy, Preprocessor,
-                                                SplitFunction, NumTrainBatches, Log)
+                                                SplitFunction, NumTrainBatches, Log, LazyLoadedImages)
         convnetBatchCreator = ConvnetBatchCreatorFactory.Create(nTrainingBatches = NumTrainBatches)
         
         convnetBatchCreator.buildBatches(dataset = dataset, 
@@ -73,7 +78,8 @@ class ConvnetDataset:
     def CreateDataset(SourceFolder, TargetFolder, ExpectedDistribution, Classes, ClassNames,
                 GetLabelsFrom = LabelFromFirstChars(2), 
                 Grayscale = False, InvertColor = False, ResizeBy = None,
-                Preprocessor = None, SplitFunction = ClassBalancingSplit(), NumTrainBatches = 3, Log  = True):
+                Preprocessor = None, SplitFunction = ClassBalancingSplit(), NumTrainBatches = 3, Log  = True, 
+                LazyLoadedImages = False):
 
         if Grayscale:
             imageReader = GrayscaleOpenCVImgReader(
@@ -93,6 +99,11 @@ class ConvnetDataset:
         if ResizeBy is not None:
             imageReader = ImageReaderDecorator(imageReader =  imageReader,
                                    decorator = ResizeBy)
+
+        if LazyLoadedImages:
+            lazyImageFactory = LazyLoadedImageFactory(GetLabelsFrom, Grayscale, Log)
+            imageReader = LazyLoadedImageReader(imageReader, lazyImageFactory)
+
 
         imageSource = ImageDataSourceFactory.CreateWithImageReader(
                       imageReader = imageReader,

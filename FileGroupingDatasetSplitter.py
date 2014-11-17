@@ -2,9 +2,10 @@ import re
 import numpy
 
 class FileGroupingDatasetSplitter:
-    def __init__(self, numFilesPerImage):
+    def __init__(self, numFilesPerImage, shuffle=True):
         self.numFilesPerImage = numFilesPerImage
         self.regex = re.compile(".*_(.*)\.")
+        self.shuffle = shuffle
 
     def split(self, data, datasetSplitIn):
         train = []
@@ -44,7 +45,8 @@ class FileGroupingDatasetSplitter:
             groupedFilenames.append(classData[wanted])
         
 
-        numpy.random.shuffle(groupedFilenames)
+        if (self.shuffle):
+            numpy.random.shuffle(groupedFilenames)
         return (item.tolist() for item in groupedFilenames)
          
     def getClassData(self, data, currentClass):

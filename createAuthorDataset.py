@@ -7,14 +7,15 @@ def selectRandomXclasses(X, total):
     np.random.shuffle(selected)
     return sorted(selected[:X])
 
-def createDatasetBFL_115classes():
+def createDatasetBFL_115classes(fold):
     sourceFolder = '/home/especial/vri/databases/autoria/BFL'
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/BFL_115classes'
+    classesFile = '/home/especial/vri/databases/autoria/BFLselected_115.pickle'
+    saveFolder  = '/home/especial/vri/databases/preprocessados/BFL_115_1trainbatch_%d' % fold
     expectedDistribution = [0.5, 0.2, 0.3]
 
     classNames = range(315)
-    classNumbers = selectRandomXclasses(115, 315)
-    print("Using only 115 classes: %s\n", classNumbers)
+    selectedClasses = cPickle.load(open(classesFile))
+    classNumbers = selectedClasses
 
     ConvnetDataset.CreateConvNetDataset(SourceFolder = sourceFolder, 
                                             TargetFolder = saveFolder,
@@ -24,12 +25,13 @@ def createDatasetBFL_115classes():
                                             ClassNames = classNames,
                                             SplitFunction = FileGroupingSplit(numFilePerImage = 9),
                                             Grayscale = True,
-                                            InvertColor = True)
+                                            InvertColor = True,
+                                            NumTrainBatches = 1)
 
-def createDatasetIAM_240classes():
+def createDatasetIAM_240classes(fold):
     sourceFolder = '/home/especial/vri/databases/autoria/IAM'
     classesFile = '/home/especial/vri/databases/autoria/IAMselected_240.pickle'
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/IAM_240classes'
+    saveFolder  = '/home/especial/vri/databases/preprocessados/IAM_240_1trainbatch_%d' % fold
     expectedDistribution = [0.5, 0, 0.5]
 
     selectedClasses = cPickle.load(open(classesFile))
@@ -45,8 +47,11 @@ def createDatasetIAM_240classes():
                                             Classes = classNumbers,
                                             ClassNames = classNames,
                                             Grayscale = True,
-                                            InvertColor = True)
+                                            InvertColor = True,
+                                            NumTrainBatches = 2)
 
 if __name__ == '__main__':
-    createDatasetIAM_240classes()
-    #createDatasetBFL_115classes()
+    #createDatasetIAM_240classes(2)
+    #createDatasetIAM_240classes(3)
+    createDatasetBFL_115classes(2)
+    createDatasetBFL_115classes(3)

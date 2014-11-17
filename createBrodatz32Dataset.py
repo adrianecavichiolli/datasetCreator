@@ -7,9 +7,9 @@ def getBrodatzClasses():
  'reptile', 'ricepaper', 'seafan', 'straw2', 'tree', 'water', 'woodgrain']
 
 
-def createDatasetBrodatz():
+def createDatasetBrodatz(fold):
     sourceFolder = '/home/especial/vri/databases/brodatz/as_png'
-    saveFolder = '/home/ppginf/lghafemann/nobackup/data/brodatz' 
+    saveFolder = '/home/ppginf/lghafemann/nobackup/data/brodatz_1batch_%d' % fold
     expectedDistribution = [0.3, 0.2, 0.5]
 
     classNames = getBrodatzClasses()
@@ -22,8 +22,10 @@ def createDatasetBrodatz():
                                             Classes = classNumbers,
                                             ClassNames = classNames,
                                             SplitFunction = GroupingSplit(),
-                                            Grayscale = True)
+                                            Grayscale = True,
+                                            NumTrainBatches = 1)
 
 if __name__ == '__main__':
-    createDatasetBrodatz()
+    createDatasetBrodatz(2)
+    createDatasetBrodatz(3)
 

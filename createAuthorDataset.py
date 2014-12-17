@@ -28,6 +28,27 @@ def createDatasetBFL_115classes(fold):
                                             InvertColor = True,
                                             NumTrainBatches = 1)
 
+def createDatasetBFL_large_115classes(fold):
+    sourceFolder = '/home/especial/vri/databases/autoria/BFL_large'
+    classesFile = '/home/especial/vri/databases/autoria/BFLselected_115.pickle'
+    saveFolder  = '/home/especial/vri/databases/preprocessados/BFL_115_large_%d'  % fold
+    expectedDistribution = [0.33, 0.33, 0.34]
+
+    classNames = range(315)
+    selectedClasses = cPickle.load(open(classesFile))
+    classNumbers = selectedClasses
+
+    ConvnetDataset.CreateConvNetDataset(SourceFolder = sourceFolder, 
+                                            TargetFolder = saveFolder,
+                                            ExpectedDistribution = expectedDistribution,
+                                            GetLabelsFrom = LabelFromFirstChars(3),
+                                            Classes = classNumbers,
+                                            SplitFunction = FileGroupingSplit(numFilePerImage = 1),
+                                            ClassNames = classNames,
+                                            Grayscale = True,
+                                            InvertColor = True,
+                                            NumTrainBatches = 1)
+
 def createDatasetIAM_240classes(fold):
     sourceFolder = '/home/especial/vri/databases/autoria/IAM'
     classesFile = '/home/especial/vri/databases/autoria/IAMselected_240.pickle'
@@ -53,5 +74,7 @@ def createDatasetIAM_240classes(fold):
 if __name__ == '__main__':
     #createDatasetIAM_240classes(2)
     #createDatasetIAM_240classes(3)
-    createDatasetBFL_115classes(2)
-    createDatasetBFL_115classes(3)
+    #createDatasetBFL_115classes(2)
+    #createDatasetBFL_115classes(3)
+    createDatasetBFL_large_115classes(2)
+    createDatasetBFL_large_115classes(3)
